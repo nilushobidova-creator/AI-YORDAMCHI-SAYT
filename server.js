@@ -34,11 +34,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
-      'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 
-      'audio/webm', 'audio/m4a', 'audio/mp4', 'audio/x-m4a', 
+      'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg',
+      'audio/webm', 'audio/m4a', 'audio/mp4', 'audio/x-m4a',
       'audio/aac', 'audio/flac'
     ];
     if (allowedMimes.includes(file.mimetype) || file.mimetype.startsWith('audio/')) {
@@ -68,17 +68,17 @@ app.post('/api/analyze', upload.single('audio'), async (req, res) => {
     const checklistItems = req.body.checklist ? JSON.parse(req.body.checklist) : [];
 
     console.log('📁 Fayl qabul qilindi:', req.file.originalname);
-    
-    // ✅ DINAMIK IMPORT: GoogleAIFileManager faqat kerak bo'lganda yuklanadi
+
+    // ✅ DINAMIK IMPORT: Eski versiyalarda server crash bo'lmasligi uchun
     let GoogleAIFileManager;
     try {
       const module = await import('@google/generative-ai');
       GoogleAIFileManager = module.GoogleAIFileManager;
       if (!GoogleAIFileManager) {
-        throw new Error('GoogleAIFileManager klassi mavjud emas. Iltimos, @google/generative-ai paketini yangilang: npm install @google/generative-ai@latest');
+        throw new Error('GoogleAIFileManager klassi mavjud emas. @google/generative-ai paketini yangilang.');
       }
     } catch (importErr) {
-      throw new Error(`Import xatosi: ${importErr.message}. Paket versiyasini tekshiring.`);
+      throw new Error(`Import xatosi: ${importErr.message}`);
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
