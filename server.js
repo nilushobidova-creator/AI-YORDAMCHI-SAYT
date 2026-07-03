@@ -1,91 +1,117 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
-const rateLimit = require('express-rate-limit');
-const morgan = require('morgan');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const multer = require('multer');
-const path = require('path');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const express = require("express");
+const path = require("path");
+const multer = require("multer");
 
-const db = require('./database/db');
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+});
 
 const app = express();
-const port = process.env.PORT || 3000;
+app.use(express.json({ limit: "20mb" })); // Limit PC dagi yirik trankskriptlar uchun oshirildi
+app.use(express.static(__dirname));
 
-// AI Model sozlamasi
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const GEMINI_KEY = process.env.GEMINI_API_KEY;
+const MODEL = "gemini-2.5-flash";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`;
 
-// Middlewares
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors());
-app.use(compression());
-app.use(express.json());
-app.use(morgan('dev'));
-app.use(express.static(path.join(__dirname, 'public')));
+async function callGemini(systemText, userText) {
+  const res = await fetch(GEMINI_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemText }] },
+      contents: [{ role: "user", parts: [{ text: userText }] }],
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "Gemini xatosi");
+  const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("\n") || "";
+  return text;
+}
 
-app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+// Product Q&A
+app.post("/api/chat", async (req, res) => {
+  try {
+    const { productInfo, message } = req.body;
+    const system = `Sen sotuv menejeri uchun mahsulot bo'yicha ichki maslahatchisan. Faqat quyidagi mahsulot ma'lumotlariga tayan, aniq va qisqa javob ber (o'zbek tilida). Agar javob ma'lumotda yo'q bo'lsa, shuni ayt, hech narsa o'ylab topma.\n\nMAHSULOT MA'LUMOTI:\n${productInfo}`;
+    const reply = await callGemini(system, message);
+    res.json({ reply });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
-const upload = multer({ dest: 'uploads/' });
+// Call transcript analysis
+app.post("/api/analyze", async (req, res) => {
+  try {
+    const { scriptSteps, transcript } = req.body;
+    const system = `Sen sotuv qo'ng'iroqlarini nazorat qiluvchi tahlilchisan. Sotuv menejeri quyidagi SKRIPT bosqichlariga amal qilishi kerak edi. Berilgan qo'ng'iroq transkriptini shu skript bilan solishtir va menejer qayerda yolg'on yoki noaniq/xato ma'lumot bergani, qayerda skriptdan chetga chiqqanini top.
 
-// Auth Middleware
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.sendStatus(401);
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
+SKRIPT BOSQICHLARI:
+${scriptSteps.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+
+Javobni FAQAT quyidagi JSON formatda ber, boshqa hech narsa yozma, kod bloklarisiz:
+{"honesty_score": 0-100, "script_completion": 0-100, "steps": [{"step": "...", "completed": true, "note": "..."}], "issues": [{"quote": "...", "issue": "...", "severity": "past/o'rta/yuqori"}], "summary": "..."}`;
+    const raw = await callGemini(system, `TRANSKRIPT:\n${transcript}`);
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const jsonStart = clean.indexOf("{");
+    const jsonEnd = clean.lastIndexOf("}");
+    const parsed = JSON.parse(clean.slice(jsonStart, jsonEnd + 1));
+    res.json(parsed);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Call analysis directly from an audio recording (Gemini listens to the audio itself)
+app.post("/api/analyze-audio", upload.single("audio"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Audio fayl topilmadi" });
+    const scriptSteps = JSON.parse(req.body.scriptSteps || "[]");
+    const base64Audio = req.file.buffer.toString("base64");
+    const mimeType = req.file.mimetype || "audio/mpeg";
+
+    const system = `Sen sotuv qo'ng'iroqlarini nazorat qiluvchi tahlilchisan. Senga mijoz bilan sotuv menejeri o'rtasidagi qo'ng'iroqning AUDIO YOZUVI beriladi. Avval uni diqqat bilan tingla (ichingda), so'ng menejer quyidagi SKRIPT bosqichlariga qanchalik amal qilganini va qayerda yolg'on yoki noaniq/xato ma'lumot berganini aniqla.
+
+SKRIPT BOSQICHLARI:
+${scriptSteps.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+
+Javobni FAQAT quyidagi JSON formatda ber, boshqa hech narsa yozma, kod bloklarisiz:
+{"transcript": "audio matnining qisqartirilgan yozuvi (asosiy qismlari)", "honesty_score": 0-100, "script_completion": 0-100, "steps": [{"step": "...", "completed": true, "note": "..."}], "issues": [{"quote": "audio dagi aniq jumla", "issue": "...", "severity": "past/o'rta/yuqori"}], "summary": "..."}`;
+
+    const response = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: system }] },
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { inline_data: { mime_type: mimeType, data: base64Audio } },
+              { text: "Yuqoridagi audio - sotuv qo'ng'iroqi yozuvi. Uni tahlil qil." },
+            ],
+          },
+        ],
+      }),
     });
-};
-
-// Login API
-app.post('/api/auth/login', (req, res) => {
-    const { username, password } = req.body;
-    db.get("SELECT * FROM Users WHERE username = ?", [username], async (err, user) => {
-        if (err || !user) return res.status(401).json({ error: 'Invalid credentials' });
-        const valid = await bcrypt.compare(password, user.password);
-        if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
-        const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET, { expiresIn: '8h' });
-        res.json({ token, role: user.role });
-    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || "Gemini xatosi");
+    const raw = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("\n") || "";
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const jsonStart = clean.indexOf("{");
+    const jsonEnd = clean.lastIndexOf("}");
+    const parsed = JSON.parse(clean.slice(jsonStart, jsonEnd + 1));
+    res.json(parsed);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-// Chat API
-app.post('/api/chat', authenticateToken, async (req, res) => {
-    const { message, history } = req.body;
-    db.get("SELECT * FROM Products WHERE status = 'active' LIMIT 1", async (err, product) => {
-        try {
-            const prompt = `Product Info: ${JSON.stringify(product)}. User message: ${message}`;
-            const result = await model.generateContent(prompt);
-            res.json({ reply: result.response.text() });
-        } catch (error) {
-            res.status(500).json({ error: 'AI Error' });
-        }
-    });
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Analysis API
-app.post('/api/analyze', authenticateToken, upload.single('callFile'), async (req, res) => {
-    try {
-        const transcript = req.body.transcript || "Simulated call data";
-        const prompt = `Analyze this: ${transcript}. Return JSON with scores, issues, and coaching.`;
-        const result = await model.generateContent(prompt);
-        // JSON formatida qaytarish
-        res.json(JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '')));
-    } catch (error) {
-        res.status(500).json({ error: 'Analysis failed' });
-    }
-});
-
-app.get('/api/dashboard', authenticateToken, (req, res) => {
-    res.json({ totalCalls: 0, avgOverall: 0 }); // Kengaytirilishi mumkin
-});
-
-app.listen(port, () => console.log(`Server running on port ${port}`));
-
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`SotuvAI ${PORT}-portda ishlamoqda`));
