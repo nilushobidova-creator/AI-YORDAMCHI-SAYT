@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { GoogleGenerativeAI, GoogleAIFileManager } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -10,7 +10,6 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -18,6 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
+// Multer sozlamalari
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = join(__dirname, 'uploads');
@@ -27,16 +27,20 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, 'audio-' + uniqueSuffix + '-' + file.originalname);
   }
 });
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: (req, file, cb) => {
-    const allowedMimes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/m4a', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/flac'];
+    const allowedMimes = [
+      'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 
+      'audio/webm', 'audio/m4a', 'audio/mp4', 'audio/x-m4a', 
+      'audio/aac', 'audio/flac'
+    ];
     if (allowedMimes.includes(file.mimetype) || file.mimetype.startsWith('audio/')) {
       cb(null, true);
     } else {
@@ -51,13 +55,11 @@ app.get('/', (req, res) => {
 
 app.post('/api/analyze', upload.single('audio'), async (req, res) => {
   let uploadedFilePath = null;
-  let geminiFileUri = null;
 
   try {
     if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY environment variable topilmadi. Railway sozlamalarida API kalitni tekshiring.');
+      throw new Error('GEMINI_API_KEY environment variable topilmadi.');
     }
-
     if (!req.file) {
       return res.status(400).json({ error: 'Audio fayl yuklanmadi.' });
     }
@@ -66,19 +68,27 @@ app.post('/api/analyze', upload.single('audio'), async (req, res) => {
     const checklistItems = req.body.checklist ? JSON.parse(req.body.checklist) : [];
 
     console.log('📁 Fayl qabul qilindi:', req.file.originalname);
-    console.log('📋 Tekshirish ro\'yxati:', checklistItems);
+    
+    // ✅ DINAMIK IMPORT: GoogleAIFileManager faqat kerak bo'lganda yuklanadi
+    let GoogleAIFileManager;
+    try {
+      const module = await import('@google/generative-ai');
+      GoogleAIFileManager = module.GoogleAIFileManager;
+      if (!GoogleAIFileManager) {
+        throw new Error('GoogleAIFileManager klassi mavjud emas. Iltimos, @google/generative-ai paketini yangilang: npm install @google/generative-ai@latest');
+      }
+    } catch (importErr) {
+      throw new Error(`Import xatosi: ${importErr.message}. Paket versiyasini tekshiring.`);
+    }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
 
-    console.log('⬆️  Gemini serveriga audio yuklanyapti...');
+    console.log('⬆️ Gemini serveriga audio yuklanyapti...');
     const uploadResult = await fileManager.uploadFile(uploadedFilePath, {
       mimeType: req.file.mimetype,
       displayName: req.file.originalname,
     });
-
-    geminiFileUri = uploadResult.file.uri;
-    console.log('✅ Fayl yuklandi:', uploadResult.file.name);
 
     let file = await fileManager.getFile(uploadResult.file.name);
     console.log('⏳ Fayl holati:', file.state);
@@ -94,149 +104,100 @@ app.post('/api/analyze', upload.single('audio'), async (req, res) => {
     }
 
     console.log('🎯 Fayl tayyor. AI tahlil boshlanmoqda...');
-
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const checklistString = checklistItems.length > 0 
+    const checklistString = checklistItems.length > 0
       ? checklistItems.map((item, idx) => `${idx + 1}. ${item}`).join('\n')
       : 'Standart sifat ko\'rsatkichlari';
 
     const systemPrompt = `
 Siz professional sifat nazorati bo'yicha mutaxassiz. Qo'ng'iroq audio yozuvini chuqur tahlil qiling.
 
-**MAHSULOT MA'LUMOTLARI:**
-- Nomi: Abihayat
-- Tarkibi: zaytun, kekkik, dolchin
-- Narxi: 600,000 so'm (bitta quti uchun)
-- AKSIYA: 2+2 bonus taklif — 2 ta sotib oling, 2 ta bepul oling (jami 4 ta quti) maxsulot soni 1 taga kamaysa narx ham 200,000 soʻmga tushadi
+MAHSULOT MA'LUMOTLARI:
+Nomi: Abihayat
+Tarkibi: zaytun, kekkik, dolchin
+Narxi: 600,000 so'm (bitta quti uchun)
+AKSIYA: 2+2 bonus taklif — 2 ta sotib oling, 2 ta bepul oling (jami 4 ta quti). Maxsulot soni 1 taga kamaysa narx ham 200,000 soʻmga tushadi.
 
-**TEKSHIRISH MEZONLARI:**
+TEKSHIRISH MEZONLARI:
 ${checklistString}
 
-**VAZIFA:**
-Audio yozuvni eshitib, menejer qanchalik professional ishladi va quyidagi mezonlarga javob berdi yoki yo'qligini baholang.
+VAZIFA:
+Audio yozuvni eshitib, menejer qanchalik professional ishladi va mezonlarga javob berdimi baholang.
 
-**MAJBURIY JAVOB FORMATI - FAQAT TO'G'RI JSON:**
-
+MAJBURIY JAVOB FORMATI - FAQAT TO'G'RI JSON:
 {
-  "score": 85,
-  "summary": "Menejer umumiy yaxshi ishladi, lekin aksiyani tushuntirishda zaiflik ko'rsatdi.",
-  "checkpoints": [
-    {
-      "name": "Salomlashish",
-      "status": "passed",
-      "time": "00:05",
-      "comment": "Issiq va professional salomlashish amalga oshirildi."
-    },
-    {
-      "name": "Mahsulot tarkibini tushuntirish",
-      "status": "passed",
-      "time": "00:45",
-      "comment": "Tarkibni batafsil va tushunarli bayon qildi."
-    },
-    {
-      "name": "Narxni aytish",
-      "status": "failed",
-      "time": "01:30",
-      "comment": "Narxni aytdi, lekin aksiya haqida gapirmadi."
-    }
-  ],
-  "critical_errors": [
-    {
-      "time": "02:15",
-      "description": "Mijoz qimmat deyilganda hech qanday javob bermay jim qoldi."
-    },
-    {
-      "time": "03:40",
-      "description": "Aksiya shartlarini noto'g'ri tushuntirdi (2+1 deb aytdi, 2+2 o'rniga)."
-    }
-  ]
+ "score": 85,
+ "summary": "Qisqa umumiy xulosa",
+ "checkpoints": [
+   { "name": "Mezon nomi", "status": "passed/failed", "time": "MM:SS", "comment": "Izoh" }
+ ],
+ "critical_errors": [
+   { "time": "MM:SS", "description": "Jiddiy xato tavsifi" }
+ ]
 }
 
-**MUHIM:**
-- "score" 0 dan 100 gacha bo'lishi kerak
-- Har bir checkpoint uchun "status" faqat "passed" yoki "failed" bo'lishi kerak
-- "time" formatida daqiqa:soniya (masalan: "01:23")
-- Agar jiddiy xatolar bo'lmasa, "critical_errors" bo'sh array [] bo'lishi mumkin
-- Faqat JSON qaytaring, boshqa hech narsa yo'q
-- Javobingiz valid JSON formatida bo'lishi shart
+MUHIM:
+- "score" 0-100 oralig'ida
+- "status" faqat "passed" yoki "failed"
+- Vaqt formati: "MM:SS"
+- Faqat valid JSON qaytaring, boshqa matn yo'q
 `;
 
     const result = await model.generateContent([
-      {
-        fileData: {
-          mimeType: file.mimeType,
-          fileUri: file.uri
-        }
-      },
+      { fileData: { mimeType: file.mimeType, fileUri: file.uri } },
       { text: systemPrompt }
     ]);
 
-    const response = await result.response;
-    let analysisText = response.text();
-    
-    console.log('🤖 AI javob olindi:', analysisText.substring(0, 200) + '...');
+    let analysisText = result.response.text();
+    console.log('🤖 AI javob olindi:', analysisText.substring(0, 150) + '...');
 
+    // Markdown kod bloklarini tozalash
     analysisText = analysisText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
     let analysisJson;
     try {
       analysisJson = JSON.parse(analysisText);
     } catch (parseError) {
-      console.error('❌ JSON parse xatosi:', parseError);
-      console.error('📄 To\'liq javob:', analysisText);
-      
+      console.error('❌ JSON parse xatosi:', parseError.message);
       analysisJson = {
         score: 50,
-        summary: 'AI javobini qayta ishlashda xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.',
+        summary: 'AI javobini qayta ishlashda xatolik. Iltimos qaytadan urinib ko\'ring.',
         checkpoints: checklistItems.map(item => ({
-          name: item,
-          status: 'failed',
-          time: '00:00',
-          comment: 'Tahlil noto\'liq bajarildi'
+          name: item, status: 'failed', time: '00:00', comment: 'Tahlil noto\'liq'
         })),
-        critical_errors: [
-          {
-            time: '00:00',
-            description: 'Texnik xatolik: AI javobi noto\'g\'ri formatda qaytdi'
-          }
-        ]
+        critical_errors: [{ time: '00:00', description: 'Texnik xatolik: AI javobi noto\'g\'ri formatda' }]
       };
     }
 
-    if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
-      fs.unlinkSync(uploadedFilePath);
-      console.log('🗑️  Vaqtinchalik fayl o\'chirildi');
-    }
-
-    console.log('✅ Tahlil muvaffaqiyatli yakunlandi. Ball:', analysisJson.score);
-
+    console.log('✅ Tahlil yakunlandi. Ball:', analysisJson.score);
     res.json(analysisJson);
 
   } catch (error) {
-    console.error('❌ Xatolik yuz berdi:', error);
-
-    if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
-      try {
-        fs.unlinkSync(uploadedFilePath);
-      } catch (cleanupError) {
-        console.error('Faylni o\'chirishda xatolik:', cleanupError);
-      }
-    }
-
+    console.error('❌ Xatolik:', error.message);
     res.status(500).json({
       error: 'Tahlil paytida xatolik yuz berdi',
       message: error.message,
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
+  } finally {
+    // ✅ Har doim vaqtinchalik faylni o'chirish
+    if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
+      try {
+        fs.unlinkSync(uploadedFilePath);
+        console.log('🗑️ Vaqtinchalik fayl o\'chirildi');
+      } catch (cleanupError) {
+        console.error('Faylni o\'chirishda xatolik:', cleanupError.message);
+      }
+    }
   }
 });
 
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    geminiConfigured: !!process.env.GEMINI_API_KEY 
+    geminiConfigured: !!process.env.GEMINI_API_KEY
   });
 });
 
