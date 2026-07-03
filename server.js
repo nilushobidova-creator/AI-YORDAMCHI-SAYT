@@ -8,7 +8,7 @@ const upload = multer({
 });
 
 const app = express();
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "20mb" })); // Limit PC dagi yirik trankskriptlar uchun oshirildi
 app.use(express.static(__dirname));
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
@@ -115,3 +115,4 @@ app.get("*", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`SotuvAI ${PORT}-portda ishlamoqda`));
+
