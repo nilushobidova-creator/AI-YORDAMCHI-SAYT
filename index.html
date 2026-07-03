@@ -1,578 +1,185 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SotuvAI — Sotuv menejeri yordamchisi</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#14213D; --ink-light:#1F2E52; --paper:#F6F3EC;
-    --gold:#C08A28; --gold-light:#E8C97A;
-    --success:#4C7A5E; --danger:#B5483F; --muted:#6B6558; --line:#EAE4D3;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0;font-family:'Manrope',sans-serif;background:var(--paper);color:#242017;}
-  h1,h2,.serif{font-family:'Fraunces',serif;}
-  .app{display:flex;height:100vh;}
-  .sidebar{width:260px;flex-shrink:0;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;}
-  .sidebar .brand{padding:30px 24px 20px;}
-  .sidebar .brand .name{font-size:22px;font-weight:600;color:var(--paper);}
-  .sidebar .brand .sub{font-size:13px;color:#9AA3BD;margin-top:4px;}
-  .ikat{width:100%;height:8px;}
-  .nav{flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:6px;}
-  .nav button{display:flex;align-items:center;gap:12px;padding:12px 16px;border:none;background:none;color:#C7CCDB;font-size:15px;border-radius:8px;cursor:pointer;text-align:left;font-family:inherit; transition: background 0.2s;}
-  .nav button:hover{background:#1B2A4A;color:var(--paper);}
-  .nav button.active{background:var(--ink-light);color:var(--gold-light);font-weight:600;}
-  .sidebar .foot{padding:20px 24px;font-size:12px;color:#7C86A3;border-top:1px solid #25335A;}
-  .main{flex:1;overflow-y:auto;}
-  .page{padding:50px;max-width:1200px;margin: 0 auto; width: 100%;}
-  .page h1{font-size:34px;color:var(--ink);margin:0;}
-  .page .desc{color:var(--muted);margin-top:8px; font-size:16px;}
-  .divider{width:180px;margin-top:16px;}
-  
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px;}
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-  .card .label{font-size:12px;color:#8A8371;text-transform:uppercase;letter-spacing:.05em;}
-  .card .value{font-family:'Fraunces',serif;font-size:34px;margin-top:10px;}
-  .empty{border:2px dashed var(--line);border-radius:12px;padding:40px;text-align:center;color:#8A8371;font-size:16px;}
-  .empty a{color:var(--gold);cursor:pointer;text-decoration:underline;}
-  .history-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-bottom:12px;font-size:15px;box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
-  .history-item .t{font-weight:600;color:var(--ink);}
-  .history-item .tm{font-size:13px;color:#8A8371;margin-top:4px;}
-
-  /* Chat */
-  .chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 100px);}
-  .chat-top{display:flex;justify-content:space-between;align-items:flex-start;}
-  .btn-outline{font-size:14px;padding:10px 18px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;cursor:pointer;color:var(--ink);font-weight:500;transition: all 0.2s;}
-  .btn-outline:hover{background:#F0EBDD;}
-  textarea, input[type=text]{font-family:inherit;font-size:15px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;padding:14px 16px;}
-  textarea:focus, input:focus{outline:none;box-shadow:0 0 0 2px var(--gold);}
-  .messages{flex:1;overflow-y:auto;margin-top:20px;display:flex;flex-direction:column;gap:14px;padding-right: 10px;}
-  .msg{max-width:70%;padding:14px 18px;border-radius:12px;font-size:15px;white-space:pre-wrap;line-height:1.5;}
-  .msg.user{align-self:flex-end;background:var(--ink);color:var(--paper);}
-  .msg.ai{align-self:flex-start;background:#fff;border:1px solid var(--line);box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
-  .chat-input{display:flex;gap:10px;margin-top:20px;}
-  .chat-input input{flex:1;}
-  .btn-send{background:var(--ink);color:#fff;border:none;border-radius:8px;padding:0 24px;cursor:pointer;font-size:16px;}
-  .btn-send:hover{background:var(--ink-light);}
-  
-  /* Loading animations */
-  .typing{color:#8A8371;font-size:14px;font-style:italic;}
-  @keyframes spin { 100% { transform: rotate(360deg); } }
-  .spinner {
-    display: inline-block;
-    width: 18px; height: 18px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-    vertical-align: middle;
-    margin-right: 8px;
-  }
-
-  /* Call Analysis */
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:30px;}
-  .step-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 16px;font-size:15px;margin-bottom:8px;box-shadow: 0 1px 4px rgba(0,0,0,0.02);}
-  .step-row button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;}
-  .add-step{display:flex;gap:10px;margin-bottom:30px;}
-  .add-step input{flex:1;}
-  .add-step button{border:1px solid #D8D1BE;border-radius:8px;background:#fff;width:44px;cursor:pointer;font-size:18px;}
-  .add-step button:hover{background:#F0EBDD;}
-  .field-label{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px;}
-  textarea.transcript{width:100%;}
-  .btn-analyze{width:100%;margin-top:16px;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.2s;}
-  .btn-analyze:hover{background:var(--ink-light);}
-  .btn-analyze:disabled{opacity:.7;cursor:default;}
-  .err{color:var(--danger);font-size:14px;margin-top:10px;}
-  
-  .mode-toggle{display:flex;gap:10px;margin-bottom:12px;}
-  .mode-btn{flex:1;padding:12px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;font-size:15px;cursor:pointer;color:var(--ink);font-family:inherit;font-weight:500;}
-  .mode-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-  .audio-drop{border:2px dashed #D8D1BE;border-radius:10px;padding:40px 20px;text-align:center;cursor:pointer;background:#fff;transition: background 0.2s;}
-  .audio-drop:hover{background:#F0EBDD;}
-  .audio-hint{color:#8A8371;font-size:15px;}
-  .audio-hint span{font-size:13px;opacity:0.8;display:block;margin-top:6px;}
-  .audio-picked{font-size:16px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:12px;}
-  .audio-picked button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;}
-
-  .gauges{display:flex;justify-content:space-around;background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px 0;box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-  .gauge-label{font-size:14px;font-weight:600;color:var(--ink);text-align:center;margin-top:8px;}
-  .result-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:20px;box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-  .result-card .title{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:12px;}
-  .step-line{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin-bottom:10px;}
-  .issue{border-left:4px solid var(--gold);padding-left:14px;margin-bottom:16px;}
-  .issue .sev{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
-  .issue .quote{font-style:italic;font-size:15px;margin-bottom:4px;}
-  .issue .desc{font-size:15px;color:#4B4536;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SotuvAI - Call Center Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        modern: { 900: '#0f172a', 800: '#1e293b', 700: '#334155', accent: '#3b82f6' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .nav-item { cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover, .nav-item.active { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border-left: 3px solid #3b82f6; }
+        .hidden-view { display: none; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        #toast { transition: opacity 0.3s, transform 0.3s; }
+    </style>
 </head>
-<body>
-<div class="app">
-  <div class="sidebar">
-    <div class="brand">
-      <div class="name">✦ SotuvAI</div>
-      <div class="sub">Sotuv menejeri yordamchisi</div>
-    </div>
-    <svg class="ikat" viewBox="0 0 200 10" preserveAspectRatio="none"></svg>
-    <div class="nav">
-      <button data-tab="dashboard">📊 Bosh sahifa</button>
-      <button data-tab="chat">💬 Mahsulot AI</button>
-      <button data-tab="call">📞 Qo'ng'iroq tahlili</button>
-    </div>
-    <div class="foot">Ma'lumotlar saqlanadi.</div>
-  </div>
-  <div class="main" id="main"></div>
-</div>
+<body class="h-screen flex overflow-hidden">
 
-<script>
-const defaultState = {
-  tab: "dashboard",
-  productInfo: `Mahsulot nomi: Abihayat
-Turi: Tabiiy o'simlik asosidagi quvvat va salomatlik mahsuloti
-Asosiy foyda: energiya oshiradi, immunitetni mustahkamlaydi
-Tarkib: Dolchin, kekkik va zaytun
-Eslatma: dori vositasi emas, biologik faol qo'shimcha sifatida tavsiya etiladi`,
-  scriptSteps: [
-    "Salomlashish va o'zini tanishtirish",
-    "Mijoz ehtiyojini aniqlash",
-    "Mahsulotni to'g'ri va halol taqdim etish",
-    "Narx va shartlarni aniq aytish",
-    "Mijoz e'tirozlariga javob berish",
-    "Keyingi qadamni kelishish (buyurtma yoki qo'ng'iroq)"
-  ],
-  messages: [],
-  history: []
-};
-
-let state = {
-  ...defaultState,
-  result: null,
-  loadingChat: false,
-  loadingAnalyze: false,
-  showEditor: false,
-  inputMode: "text", 
-  audioFile: null,
-};
-
-// LocalStorage dan ma'lumotlarni o'qish
-try {
-  const saved = localStorage.getItem("sotuvAI_state");
-  if(saved){
-    const parsed = JSON.parse(saved);
-    if(parsed.tab) state.tab = parsed.tab;
-    // Agarda productInfo tahrirlanmagan bo'lsa, uni eskisidan yangisiga avtomatik o'zgartirish qismi
-    if(parsed.productInfo && !parsed.productInfo.includes("Dolchin")) {
-      state.productInfo = defaultState.productInfo;
-    } else if (parsed.productInfo) {
-      state.productInfo = parsed.productInfo;
-    }
-    if(parsed.scriptSteps) state.scriptSteps = parsed.scriptSteps;
-    if(parsed.messages) state.messages = parsed.messages;
-    if(parsed.history) state.history = parsed.history;
-  }
-} catch(e){}
-
-// O'zgarishlarni LocalStorage'ga yozish
-function saveState(){
-  localStorage.setItem("sotuvAI_state", JSON.stringify({
-    tab: state.tab,
-    productInfo: state.productInfo,
-    scriptSteps: state.scriptSteps,
-    messages: state.messages,
-    history: state.history
-  }));
-}
-
-function ikatSVG(color){
-  let s = "";
-  for(let i=0;i<20;i++){
-    s += `<polyline points="${i*10},10 ${i*10+5},0 ${i*10+10},10" fill="none" stroke="${color}" stroke-width="1.4"/>`;
-  }
-  return s;
-}
-document.querySelectorAll(".ikat").forEach(el => el.innerHTML = ikatSVG("#C08A28"));
-
-function gaugeSVG(score, label){
-  const r=54,c=2*Math.PI*r,pct=Math.max(0,Math.min(100,score||0));
-  const offset=c-(pct/100)*c;
-  const color = pct>=75?"#4C7A5E":pct>=45?"#C08A28":"#B5483F";
-  return `<div style="text-align:center;">
-    <svg width="140" height="140" viewBox="0 0 140 140">
-      <circle cx="70" cy="70" r="${r}" stroke="#E7E1D3" stroke-width="10" fill="none"/>
-      <circle cx="70" cy="70" r="${r}" stroke="${color}" stroke-width="10" fill="none"
-        stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
-        transform="rotate(-90 70 70)"/>
-      <text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="#14213D" font-family="Fraunces,serif">${pct}</text>
-      <text x="70" y="88" text-anchor="middle" font-size="11" fill="#6B6558">/ 100</text>
-    </svg>
-    <div class="gauge-label">${label}</div>
-  </div>`;
-}
-
-async function apiChat(message){
-  const res = await fetch("/api/chat", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({productInfo: state.productInfo, message})
-  });
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || "Xatolik");
-  return data.reply;
-}
-
-async function apiAnalyze(transcript){
-  const res = await fetch("/api/analyze", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({scriptSteps: state.scriptSteps, transcript})
-  });
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || "Xatolik");
-  return data;
-}
-
-// XHR yordamida audio yuklash va progressini kuzatish
-function apiAnalyzeAudioXHR(file, onProgress){
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/analyze-audio");
-    xhr.upload.onprogress = (e) => {
-      if(e.lengthComputable) {
-        const pct = Math.round((e.loaded / e.total) * 100);
-        onProgress(pct);
-      }
-    };
-    xhr.onload = () => {
-      try {
-        const data = JSON.parse(xhr.responseText);
-        if(xhr.status >= 200 && xhr.status < 300) resolve(data);
-        else reject(new Error(data.error || "Xatolik"));
-      } catch(err) { reject(new Error("Serverdan noto'g'ri javob keldi")); }
-    };
-    xhr.onerror = () => reject(new Error("Tarmoq xatosi"));
-    const form = new FormData();
-    form.append("audio", file);
-    form.append("scriptSteps", JSON.stringify(state.scriptSteps));
-    xhr.send(form);
-  });
-}
-
-function setTab(t){ state.tab = t; saveState(); render(); }
-
-function render(){
-  document.querySelectorAll(".nav button").forEach(b=>{
-    b.classList.toggle("active", b.dataset.tab === state.tab);
-    b.onclick = () => setTab(b.dataset.tab);
-  });
-  const main = document.getElementById("main");
-  if(state.tab === "dashboard") main.innerHTML = renderDashboard();
-  if(state.tab === "chat") main.innerHTML = renderChat();
-  if(state.tab === "call") main.innerHTML = renderCall();
-  attachHandlers();
-}
-
-function renderDashboard(){
-  const h = state.history;
-  const avgH = h.length ? Math.round(h.reduce((s,x)=>s+x.honesty_score,0)/h.length) : null;
-  const avgC = h.length ? Math.round(h.reduce((s,x)=>s+x.script_completion,0)/h.length) : null;
-  return `
-  <div class="page">
-    <h1>Xush kelibsiz</h1>
-    <p class="desc">Sotuv jamoangiz uchun AI yordamchi va qo'ng'iroq nazorati tizimi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    <div class="stats">
-      <div class="card"><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value" style="color:#14213D">${h.length}</div></div>
-      <div class="card"><div class="label">O'rtacha halollik balli</div><div class="value" style="color:#C08A28">${avgH ?? "—"}</div></div>
-      <div class="card"><div class="label">O'rtacha skript bajarilishi</div><div class="value" style="color:#4C7A5E">${avgC!=null?avgC+"%":"—"}</div></div>
-    </div>
-    <h2 class="serif" style="font-size:22px;margin-top:40px;">So'nggi tahlillar</h2>
-    ${h.length===0
-      ? `<div class="empty">Hozircha tahlil yo'q. <br><a id="goCall" style="display:inline-block;margin-top:8px;">Birinchi qo'ng'iroqni tahlil qiling</a></div>`
-      : h.slice(0,8).map(x=>`
-        <div class="history-item">
-          <div><div class="t">${x.title}</div><div class="tm">${x.time}</div></div>
-          <div style="font-size:16px;">
-            <span style="color:#4C7A5E;margin-right:16px;"><b>${x.script_completion}%</b> skript</span>
-            <span style="color:${x.honesty_score>=75?'#4C7A5E':x.honesty_score>=45?'#C08A28':'#B5483F'}"><b>${x.honesty_score}</b> halollik</span>
-          </div>
-        </div>`).join("")
-    }
-  </div>`;
-}
-
-function renderChat(){
-  return `
-  <div class="page chat-wrap">
-    <div class="chat-top">
-      <div>
-        <h1>Mahsulot AI</h1>
-        <p class="desc">Sotuv menejeri savol beradi, AI faqat mahsulot ma'lumotlari asosida javob beradi.</p>
-      </div>
-      <button class="btn-outline" id="toggleEditor">${state.showEditor ? "Yopish" : "Ma'lumotni tahrirlash"}</button>
-    </div>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    ${state.showEditor ? `<textarea id="productInfo" rows="7" style="width:100%;margin-top:16px;line-height:1.5;">${state.productInfo}</textarea>` : ""}
-    <div class="messages" id="messages">
-      ${state.messages.length===0 ? `<div style="color:#8A8371;font-size:15px;text-align:center;margin-top:20px;">Masalan: "Bu mahsulot tarkibi nimalardan iborat va qanday foyda beradi?"</div>` : ""}
-      ${state.messages.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}">${m.text}</div>`).join("")}
-      ${state.loadingChat ? `<div class="typing">AI yozmoqda...</div>` : ""}
-    </div>
-    <div class="chat-input">
-      <input type="text" id="chatInput" placeholder="Savolingizni kiriting..." />
-      <button class="btn-send" id="sendChat">➤</button>
-    </div>
-  </div>`;
-}
-
-function renderCall(){
-  return `
-  <div class="page">
-    <h1>Qo'ng'iroq tahlili</h1>
-    <p class="desc">Qo'ng'iroq matnini yoki audio faylni joylang — AI skript bo'yicha tahlil qiladi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    <div class="cols">
-      <div>
-        <div class="field-label">Skript bosqichlari</div>
-        <div id="stepsList">
-          ${state.scriptSteps.map((s,i)=>`<div class="step-row"><span>${i+1}. ${s}</span><button data-i="${i}" class="rmStep">✕</button></div>`).join("")}
+    <!-- Auth View -->
+    <div id="authView" class="fixed inset-0 z-50 flex items-center justify-center bg-modern-900 glass">
+        <div class="glass p-8 rounded-xl w-96 shadow-2xl">
+            <div class="text-center mb-6">
+                <i class="fas fa-headset text-4xl text-blue-500 mb-2"></i>
+                <h1 class="text-2xl font-bold">SotuvAI Access</h1>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400">Username</label>
+                    <input type="text" id="username" class="w-full bg-modern-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500" value="admin">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400">Password</label>
+                    <input type="password" id="password" class="w-full bg-modern-800 border border-gray-600 rounded p-2 text-white focus:outline-none focus:border-blue-500" value="admin123">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition shadow-lg">Login</button>
+            </form>
         </div>
-        <div class="add-step">
-          <input type="text" id="newStep" placeholder="Yangi bosqich qo'shish..." />
-          <button id="addStep">+</button>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 glass flex flex-col hidden-view">
+        <div class="p-4 flex items-center gap-3 border-b border-gray-700">
+            <i class="fas fa-headset text-2xl text-blue-500"></i>
+            <span class="text-xl font-bold tracking-wider">SotuvAI</span>
         </div>
-        
-        <div class="field-label">Qo'ng'iroq manbasi</div>
-        <div class="mode-toggle">
-          <button class="mode-btn ${state.inputMode==='text'?'active':''}" data-mode="text">✎ Matn ko'rinishida</button>
-          <button class="mode-btn ${state.inputMode==='audio'?'active':''}" data-mode="audio">🎙 Audio yuklash</button>
+        <nav class="flex-1 mt-4 space-y-1">
+            <div class="nav-item active p-4 flex items-center gap-3" data-target="dashboardView">
+                <i class="fas fa-chart-pie w-5"></i> Dashboard
+            </div>
+            <div class="nav-item p-4 flex items-center gap-3" data-target="chatView">
+                <i class="fas fa-comments w-5"></i> AI Chat
+            </div>
+            <div class="nav-item p-4 flex items-center gap-3" data-target="analysisView">
+                <i class="fas fa-wave-square w-5"></i> Call Analysis
+            </div>
+            <div class="nav-item p-4 flex items-center gap-3" data-target="productsView">
+                <i class="fas fa-box w-5"></i> Products
+            </div>
+        </nav>
+        <div class="p-4 border-t border-gray-700">
+            <button id="logoutBtn" class="flex items-center gap-2 text-gray-400 hover:text-white transition w-full">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </div>
-        ${state.inputMode === "text" ? `
-          <textarea class="transcript" id="transcript" rows="10" placeholder="Menejer: Assalomu alaykum...&#10;Mijoz: Vaalaykum assalom..."></textarea>
-        ` : `
-          <div class="audio-drop" id="audioDrop">
-            <input type="file" id="audioFile" accept="audio/*" style="display:none;" />
-            ${state.audioFile
-              ? `<div class="audio-picked">🎧 <b>${state.audioFile.name}</b> <button id="removeAudio">✕</button></div>`
-              : `<div class="audio-hint">Audio faylni tanlash uchun ushbu hududga bosing<br><span>(mp3, wav, m4a, ogg formatlari — 20MB gacha)</span></div>`
-            }
-          </div>
-        `}
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="flex-1 flex flex-col h-full overflow-hidden hidden-view bg-modern-900">
         
-        <div id="uploadProgress" style="display:none; justify-content:center; align-items:center; flex-direction:column; margin: 24px 0;">
-          <svg width="70" height="70" viewBox="0 0 70 70">
-            <circle cx="35" cy="35" r="30" stroke="#E7E1D3" stroke-width="5" fill="none"/>
-            <circle id="uploadPctCircle" cx="35" cy="35" r="30" stroke="var(--ink)" stroke-width="5" fill="none"
-              stroke-dasharray="188.4" stroke-dashoffset="188.4" stroke-linecap="round"
-              transform="rotate(-90 35 35)" style="transition: stroke-dashoffset 0.1s linear;"/>
-            <text id="uploadPctText" x="35" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">0%</text>
-          </svg>
-          <div style="font-size:14px; color:var(--muted); margin-top:10px;">Audio fayl serverga yuklanmoqda...</div>
-        </div>
+        <!-- Dashboard View -->
+        <section id="dashboardView" class="view-section p-6 h-full overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-6">Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass p-4 rounded-lg border border-gray-700">
+                    <p class="text-gray-400 text-sm">Total Calls</p>
+                    <p class="text-3xl font-bold text-blue-400" id="dashTotalCalls">0</p>
+                </div>
+                <div class="glass p-4 rounded-lg border border-gray-700">
+                    <p class="text-gray-400 text-sm">Avg Overall Score</p>
+                    <p class="text-3xl font-bold text-green-400" id="dashAvgOverall">0%</p>
+                </div>
+                <div class="glass p-4 rounded-lg border border-gray-700">
+                    <p class="text-gray-400 text-sm">Avg Honesty</p>
+                    <p class="text-3xl font-bold text-purple-400" id="dashAvgHonesty">0%</p>
+                </div>
+                <div class="glass p-4 rounded-lg border border-gray-700">
+                    <p class="text-gray-400 text-sm">Avg Script Mastery</p>
+                    <p class="text-3xl font-bold text-yellow-400" id="dashAvgScript">0%</p>
+                </div>
+            </div>
+            <div class="glass p-4 rounded-lg border border-gray-700 h-96">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </section>
 
-        <button class="btn-analyze" id="analyzeBtn" ${state.loadingAnalyze?"disabled":""}>
-          ${state.loadingAnalyze?"<span class='spinner'></span> Tahlil qilinmoqda...":"📞 Tahlil qilish"}
-        </button>
-        <div id="analyzeErr" class="err"></div>
-      </div>
-      <div id="resultCol">
-        ${state.result ? renderResult(state.result) : `<div class="empty" style="height:100%;display:flex;align-items:center;justify-content:center;">Tahlil natijasi shu yerda ko'rinadi.</div>`}
-      </div>
+        <!-- Chat View -->
+        <section id="chatView" class="view-section h-full flex flex-col hidden">
+            <div class="flex-1 p-6 overflow-y-auto space-y-4" id="chatBox">
+                <div class="flex gap-4">
+                    <div class="bg-modern-700 p-3 rounded-lg rounded-tl-none max-w-2xl text-sm border border-gray-600 shadow">
+                        Hello. I am SotuvAI. Ask me anything about the active products or sales logic.
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 glass border-t border-gray-700">
+                <form id="chatForm" class="flex gap-2">
+                    <input type="text" id="chatInput" class="flex-1 bg-modern-800 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500" placeholder="Type your message...">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-bold transition">Send <i class="fas fa-paper-plane ml-1"></i></button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Analysis View -->
+        <section id="analysisView" class="view-section p-6 h-full overflow-y-auto hidden">
+            <h2 class="text-2xl font-bold mb-6">Call Transcript Analysis</h2>
+            <div class="glass p-6 rounded-lg border border-gray-700 mb-6">
+                <form id="analyzeForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Paste Transcript or Notes</label>
+                        <textarea id="transcriptInput" rows="5" class="w-full bg-modern-800 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500" placeholder="Agent: Hello..."></textarea>
+                    </div>
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-lg font-bold transition flex items-center gap-2" id="analyzeBtn">
+                        <i class="fas fa-magic"></i> Analyze Call
+                    </button>
+                </form>
+            </div>
+
+            <!-- Analysis Results -->
+            <div id="analysisResults" class="hidden space-y-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="scoreCards"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass p-4 rounded-lg border border-gray-700">
+                        <h3 class="font-bold text-red-400 mb-3"><i class="fas fa-exclamation-triangle"></i> Issues Detected</h3>
+                        <div id="issuesList" class="space-y-3 text-sm"></div>
+                    </div>
+                    <div class="glass p-4 rounded-lg border border-gray-700">
+                        <h3 class="font-bold text-green-400 mb-3"><i class="fas fa-chalkboard-teacher"></i> AI Coach</h3>
+                        <div id="coachList" class="space-y-3 text-sm"></div>
+                    </div>
+                </div>
+
+                <div class="glass p-4 rounded-lg border border-gray-700">
+                     <h3 class="font-bold text-blue-400 mb-3"><i class="fas fa-clock"></i> Timeline Events</h3>
+                     <div id="timelineList" class="space-y-2 text-sm text-gray-300"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products View -->
+        <section id="productsView" class="view-section p-6 h-full overflow-y-auto hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Products Knowledge Base</h2>
+            </div>
+            <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 glass border-l-4 border-blue-500 text-white px-6 py-3 rounded shadow-lg opacity-0 pointer-events-none translate-y-4">
+        Message goes here
     </div>
-  </div>`;
-}
 
-function renderResult(r){
-  return `
-    <div class="gauges">
-      ${gaugeSVG(r.honesty_score, "Halollik balli")}
-      ${gaugeSVG(r.script_completion, "Skript bajarilishi")}
-    </div>
-    <div class="result-card">
-      <div class="title">Xulosa</div>
-      <p style="font-size:15px;color:#4B4536;margin:0;line-height:1.5;">${r.summary || ""}</p>
-    </div>
-    ${r.transcript ? `
-    <div class="result-card">
-      <div class="title">Audio matni (transkript)</div>
-      <p style="font-size:14px;color:#4B4536;white-space:pre-wrap;margin:0;line-height:1.5;">${r.transcript}</p>
-    </div>` : ""}
-    <div class="result-card">
-      <div class="title">Skript bo'yicha bosqichlar holati</div>
-      ${(r.steps||[]).map(s=>`
-        <div class="step-line">
-          <span style="color:${s.completed?'#4C7A5E':'#B5483F'};font-weight:bold;">${s.completed?"✔":"✕"}</span>
-          <div><div style="font-weight:500;">${s.step}</div>${s.note?`<div style="font-size:13px;color:#8A8371;margin-top:2px;">${s.note}</div>`:""}</div>
-        </div>`).join("")}
-    </div>
-    ${(r.issues && r.issues.length) ? `
-    <div class="result-card">
-      <div class="title">Aniqlangan xato va yolg'onlar</div>
-      ${r.issues.map(iss=>{
-        const c = iss.severity==="yuqori"?"#B5483F":iss.severity==="o'rta"?"#C08A28":"#9AA3BD";
-        return `<div class="issue" style="border-color:${c}">
-          <div class="sev" style="color:${c}">⚠ ${iss.severity} darajali</div>
-          <div class="quote">"${iss.quote}"</div>
-          <div class="desc">${iss.issue}</div>
-        </div>`;
-      }).join("")}
-    </div>` : ""}
-  `;
-}
-
-function attachHandlers(){
-  const goCall = document.getElementById("goCall");
-  if(goCall) goCall.onclick = () => setTab("call");
-
-  const toggleEditor = document.getElementById("toggleEditor");
-  if(toggleEditor) toggleEditor.onclick = () => { state.showEditor = !state.showEditor; render(); };
-
-  const productInfo = document.getElementById("productInfo");
-  if(productInfo) productInfo.oninput = (e) => { 
-    state.productInfo = e.target.value; 
-    saveState();
-  };
-
-  const sendChat = document.getElementById("sendChat");
-  const chatInput = document.getElementById("chatInput");
-  if(sendChat){
-    const send = async () => {
-      const val = chatInput.value.trim();
-      if(!val || state.loadingChat) return;
-      state.messages.push({role:"user", text: val});
-      saveState();
-      chatInput.value = "";
-      state.loadingChat = true;
-      render();
-      document.getElementById("chatInput").focus();
-      try{
-        const reply = await apiChat(val);
-        state.messages.push({role:"ai", text: reply});
-        saveState();
-      }catch(e){
-        state.messages.push({role:"ai", text: "Xatolik yuz berdi, qayta urinib ko'ring."});
-      }
-      state.loadingChat = false;
-      render();
-      const box = document.getElementById("messages");
-      if(box) box.scrollTop = box.scrollHeight;
-    };
-    sendChat.onclick = send;
-    chatInput.onkeydown = (e) => { if(e.key === "Enter") send(); };
-    if(state.tab === "chat") chatInput.focus();
-  }
-
-  document.querySelectorAll(".rmStep").forEach(btn=>{
-    btn.onclick = () => { state.scriptSteps.splice(+btn.dataset.i, 1); saveState(); render(); };
-  });
-  
-  const addStep = document.getElementById("addStep");
-  const newStep = document.getElementById("newStep");
-  if(addStep){
-    const add = () => { 
-      if(newStep.value.trim()){ 
-        state.scriptSteps.push(newStep.value.trim()); 
-        saveState(); 
-        render(); 
-      } 
-    };
-    addStep.onclick = add;
-    newStep.onkeydown = (e) => { if(e.key==="Enter") add(); };
-  }
-
-  document.querySelectorAll(".mode-btn").forEach(btn=>{
-    btn.onclick = () => { state.inputMode = btn.dataset.mode; state.result = null; render(); };
-  });
-
-  const audioDrop = document.getElementById("audioDrop");
-  const audioFileInput = document.getElementById("audioFile");
-  if(audioDrop && audioFileInput){
-    audioDrop.onclick = (e) => { if(e.target.id !== "removeAudio") audioFileInput.click(); };
-    audioFileInput.onchange = () => {
-      if(audioFileInput.files[0]){ state.audioFile = audioFileInput.files[0]; render(); }
-    };
-  }
-  const removeAudio = document.getElementById("removeAudio");
-  if(removeAudio) removeAudio.onclick = (e) => { e.stopPropagation(); state.audioFile = null; render(); };
-
-  const transcriptEl = document.getElementById("transcript");
-  const analyzeBtn = document.getElementById("analyzeBtn");
-  
-  if(analyzeBtn){
-    analyzeBtn.onclick = async () => {
-      const errEl = document.getElementById("analyzeErr");
-      errEl.textContent = "";
-
-      if(state.inputMode === "text"){
-        const t = transcriptEl.value.trim();
-        if(!t || analyzeBtn.disabled) return;
-        
-        analyzeBtn.disabled = true;
-        analyzeBtn.innerHTML = "<span class='spinner'></span> Tahlil qilinmoqda...";
-
-        try{
-          const r = await apiAnalyze(t);
-          state.result = r;
-          state.history.unshift({
-            title: t.slice(0,40) + (t.length>40?"...":""),
-            time: new Date().toLocaleString("uz-UZ"),
-            honesty_score: r.honesty_score,
-            script_completion: r.script_completion
-          });
-          saveState();
-          render();
-        }catch(e){
-          analyzeBtn.disabled = false;
-          analyzeBtn.innerHTML = "📞 Tahlil qilish";
-          errEl.textContent = "Tahlil qilishda xatolik yuz berdi. Qayta urinib ko'ring.";
-        }
-      } else {
-        if(!state.audioFile || analyzeBtn.disabled) return;
-        
-        const prog = document.getElementById("uploadProgress");
-        const pctText = document.getElementById("uploadPctText");
-        const pctCircle = document.getElementById("uploadPctCircle");
-
-        analyzeBtn.disabled = true;
-        analyzeBtn.style.display = "none";
-        prog.style.display = "flex";
-        pctText.textContent = "0%";
-        pctCircle.setAttribute("stroke-dashoffset", "188.4");
-
-        try{
-          const r = await apiAnalyzeAudioXHR(state.audioFile, (pct) => {
-            pctText.textContent = pct + "%";
-            pctCircle.setAttribute("stroke-dashoffset", 188.4 - (pct/100)*188.4);
-            if(pct === 100) {
-              prog.style.display = "none";
-              analyzeBtn.style.display = "block";
-              analyzeBtn.innerHTML = "<span class='spinner'></span> Tahlil qilinmoqda...";
-            }
-          });
-          
-          state.result = r;
-          state.history.unshift({
-            title: "🎙 " + state.audioFile.name,
-            time: new Date().toLocaleString("uz-UZ"),
-            honesty_score: r.honesty_score,
-            script_completion: r.script_completion
-          });
-          saveState();
-          render();
-        }catch(e){
-          prog.style.display = "none";
-          analyzeBtn.style.display = "block";
-          analyzeBtn.disabled = false;
-          analyzeBtn.innerHTML = "📞 Tahlil qilish";
-          errEl.textContent = e.message || "Audio tahlil qilishda xatolik yuz berdi. Qayta urinib ko'ring.";
-        }
-      }
-    };
-  }
-}
-
-// Boshlang'ich yuklanish
-render();
-</script>
+    <script src="/js/app.js"></script>
 </body>
 </html>
-
