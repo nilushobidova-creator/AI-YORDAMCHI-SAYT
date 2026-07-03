@@ -1,348 +1,132 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ALIVIDA AI — Sotuv Murabbiyi va Tahlil</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0B1121;
-    --card: rgba(25, 33, 56, 0.6);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --gold: #D4AF37;
-    --gold-hover: #F3C623;
-    --text: #E2E8F0;
-    --text-muted: #94A3B8;
-    --accent: #2563EB;
-    --success: #10B981;
-    --danger: #EF4444;
-  }
-
-  * { box-sizing: border-box; }
-  body { 
-    margin: 0; 
-    font-family: 'Manrope', sans-serif; 
-    background: linear-gradient(135deg, var(--bg), #111827); 
-    color: var(--text); 
-    min-height: 100vh;
-  }
-  
-  .app { display: flex; height: 100vh; overflow: hidden; }
-  
-  /* Sidebar */
-  .sidebar { width: 280px; background: rgba(11, 17, 33, 0.8); backdrop-filter: blur(12px); border-right: 1px solid var(--card-border); display: flex; flex-direction: column; z-index: 10; }
-  .brand { padding: 30px 24px; }
-  .brand h1 { margin: 0; font-size: 24px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
-  .brand h1 span { color: var(--gold); }
-  .nav { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-  .nav button { background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 14px 18px; text-align: left; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; }
-  .nav button:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-  .nav button.active { background: var(--card); border: 1px solid var(--gold); color: var(--gold); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1); }
-  
-  /* Main Content */
-  .main { flex: 1; overflow-y: auto; padding: 40px; position: relative; }
-  .page-title { font-size: 28px; margin-top: 0; font-weight: 600; color: #fff; }
-  .page-desc { color: var(--text-muted); font-size: 15px; line-height: 1.6; max-width: 600px; }
-  
-  /* Chat Interface */
-  .chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 80px); max-width: 900px; margin: 0 auto; }
-  .messages { flex: 1; overflow-y: auto; padding: 20px 0; display: flex; flex-direction: column; gap: 20px; }
-  .messages::-webkit-scrollbar { width: 6px; }
-  .messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-  
-  .msg { max-width: 80%; padding: 16px 20px; border-radius: 16px; font-size: 15px; line-height: 1.6; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .msg.user { align-self: flex-end; background: var(--gold); color: #000; font-weight: 500; border-bottom-right-radius: 4px; }
-  .msg.ai { align-self: flex-start; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-bottom-left-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(10px); }
-  
-  .chat-input { display: flex; gap: 12px; margin-top: 20px; background: var(--card); padding: 10px; border-radius: 16px; border: 1px solid var(--card-border); backdrop-filter: blur(10px); }
-  .chat-input input { flex: 1; background: transparent; border: none; color: #fff; font-size: 15px; font-family: inherit; padding: 10px; }
-  .chat-input input:focus { outline: none; }
-  .chat-input input::placeholder { color: #64748B; }
-  .btn-send { background: var(--gold); color: #000; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 18px; }
-  .btn-send:hover { background: var(--gold-hover); transform: scale(1.05); }
-
-  /* Typing Animation */
-  .typing-indicator { display: flex; gap: 6px; padding: 16px 20px; background: var(--card); border-radius: 16px; width: fit-content; border-bottom-left-radius: 4px; }
-  .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; animation: blink 1.4s infinite ease-in-out both; }
-  .dot:nth-child(1) { animation-delay: -0.32s; }
-  .dot:nth-child(2) { animation-delay: -0.16s; }
-  @keyframes blink { 0%, 80%, 100% { transform: scale(0.4); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
-
-  /* Call Analysis Interface */
-  .upload-area { border: 2px dashed rgba(212, 175, 55, 0.4); border-radius: 20px; padding: 50px 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(255,255,255,0.02); margin-top: 30px; }
-  .upload-area:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
-  .upload-icon { font-size: 40px; margin-bottom: 15px; }
-  .upload-text { color: var(--text); font-size: 16px; font-weight: 500; }
-  .upload-sub { color: var(--text-muted); font-size: 13px; margin-top: 8px; }
-  
-  .audio-player-container { display: none; background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; margin-top: 30px; }
-  .audio-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-  .audio-name { font-weight: 500; display: flex; align-items: center; gap: 10px; }
-  
-  /* Equalizer Animation */
-  .visualizer { display: flex; gap: 4px; height: 30px; align-items: flex-end; }
-  .bar { width: 5px; background: var(--gold); border-radius: 3px; height: 4px; transition: height 0.1s ease; }
-  .visualizer.playing .bar { animation: eq 0.6s infinite alternate ease-in-out; }
-  .visualizer.playing .bar:nth-child(1) { animation-delay: 0.1s; }
-  .visualizer.playing .bar:nth-child(2) { animation-delay: 0.4s; }
-  .visualizer.playing .bar:nth-child(3) { animation-delay: 0.2s; }
-  .visualizer.playing .bar:nth-child(4) { animation-delay: 0.5s; }
-  .visualizer.playing .bar:nth-child(5) { animation-delay: 0.3s; }
-  @keyframes eq { 0% { height: 6px; } 100% { height: 100%; } }
-
-  audio { width: 100%; height: 40px; border-radius: 8px; outline: none; }
-  audio::-webkit-media-controls-panel { background: #1E293B; }
-  audio::-webkit-media-controls-current-time-display, 
-  audio::-webkit-media-controls-time-remaining-display { color: #fff; }
-
-  .btn-analyze { width: 100%; background: linear-gradient(90deg, var(--gold), #E8C97A); color: #000; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s; display: none; }
-  .btn-analyze:hover { box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
-  .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
-
-  .result-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 25px; margin-top: 30px; display: none; animation: fadeIn 0.5s ease; backdrop-filter: blur(10px); }
-  .result-title { font-size: 18px; color: var(--gold); margin-bottom: 15px; font-weight: 600; }
-  
-  .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.1); color: #fff; margin-bottom: 10px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALIVIDA AI | Pro Manager</title>
+    <style>
+        /* PRO DESIGN SYSTEM */
+        :root {
+            --bg-dark: #0f172a;
+            --panel: #1e293b;
+            --gold: #eab308;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: var(--text-main); }
+        .app-container { display: flex; height: 100vh; }
+        
+        /* Sidebar Navigation */
+        .sidebar { width: 250px; background: #020617; border-right: 1px solid #334155; padding: 20px; }
+        .menu-item { padding: 15px; margin-bottom: 10px; cursor: pointer; border-radius: 8px; transition: 0.3s; color: var(--text-dim); }
+        .menu-item.active { background: var(--panel); color: var(--gold); border: 1px solid var(--gold); }
+        
+        /* Main Content */
+        .content { flex: 1; padding: 30px; overflow-y: auto; }
+        .chat-area { max-width: 800px; margin: auto; }
+        
+        /* Chat Design */
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 15px; max-width: 80%; }
+        .message.ai { background: var(--panel); border-left: 4px solid var(--gold); align-self: flex-start; }
+        .message.user { background: var(--gold); color: #000; align-self: flex-end; margin-left: auto; }
+        
+        /* Audio Section */
+        .upload-section { border: 2px dashed #475569; padding: 40px; text-align: center; border-radius: 15px; cursor: pointer; transition: 0.3s; }
+        .upload-section:hover { border-color: var(--gold); background: #1e293b; }
+    </style>
 </head>
 <body>
 
-<div class="app">
-  <div class="sidebar">
-    <div class="brand">
-      <h1><span>✦</span> ALIVIDA AI</h1>
+<div class="app-container">
+    <div class="sidebar">
+        <h2 style="color:var(--gold)">ALIVIDA AI</h2>
+        <div class="menu-item active" onclick="switchView('chat')">💬 AI Coach</div>
+        <div class="menu-item" onclick="switchView('audio')">🎙️ Audio Tahlil</div>
     </div>
-    <div class="nav">
-      <button data-tab="chat" class="active">💬 AI Murabbiy</button>
-      <button data-tab="call">🎙️ Qo'ng'iroq tahlili</button>
+    
+    <div class="content" id="mainView">
+        <!-- Dynamic content goes here -->
     </div>
-  </div>
-
-  <div class="main" id="main"></div>
 </div>
 
 <script>
-const defaultState = {
-  tab: "chat",
-  productInfo: `Sening isming ALIVIDA AI. Sen erkin, tabiiy va aqlli sotuv bo'yicha ko'makchisan.
-Sening vazifang: Menejerlarga sotuvda yordam berish, Abihayat damlamasi haqida ma'lumot berish va mijozlar bilan muloqotda yuzaga keladigan muammolarga aniq yechim ko'rsatish.
-
-QAT'IY QOIDALAR:
-1. Qolipga tushib qolma. Har bir menejerning savoliga ijodiy, lekin juda aniq va qisqa javob ber.
-2. Menejer qanday savol bersa, FAQAT ana shu savolga javob ber. Boshqa keraksiz mavzularga o'tib ketma.
-3. Har doim javobing yakunida menejerni harakatga undovchi yoki fikrini biluvchi bitta SAVOL bilan tugat (Masalan: "Mijoz yana nima deb e'tiroz bildirdi?", "Shu usulni sinab ko'ramizmi?").
-4. "Pul qaytarish kafolati" (yordam bermasa pul qaytariladi) degan gaplarni ASLO ishlatma. Mijozlarga bu va'da berilmaydi.
-5. To'lov oldindan olinmaydi, faqat yetkazib berilganda to'lanadi.
-6. Maxsulot tarkibidan kelib chiqqan holda, u soʻragan kasallikda qanday yordam berishini batafsil tushuntir.
-
-ABIHAYAT HAQIDA MA'LUMOT:
-- Tarkibi: Zaytun yaprogʻi, kekkik, dolchin va 67 xil turga yaqin makro va mikro elementlar.
-- Qadoq: 1 qutida 45 dona choy bo'ladi.
-- Qabul qilish: Ertalab va kechqurun 200ml qaynagan suvga damlanib, to'q qoringa ichiladi. Demak, 1 quti 22,5 kunga yetadi.
-- Narxlar: 1 ta quti narxi 600,000 so'm. Bir kurs lecheniya 3 oy, ya'ni 4 ta quti = 2,400,000 so'm bo'ladi.
-- Aksiya: Agar bemor 2 quti xarid qilsa, yana 2 quti bonus qilib yetkazib beriladi (Jami 4 quti olasiz, yarim puliga).`,
-  messages: [],
-  isTyping: false
-};
-
-let state = { ...defaultState };
-
-// MOCK API - Erkin va skriptga asoslangan aqlli javoblar simulyatsiyasi
-async function mockAIChat(msg) {
-  await new Promise(r => setTimeout(r, 1200)); // O'ylash imitatsiyasi
-  const lowerMsg = msg.toLowerCase();
-  
-  if(lowerMsg.includes("narx") || lowerMsg.includes("qancha")) {
-    return `Abihayatning 1 qutisi 600,000 so'm turadi. 
-Agar mijoz to'liq 3 oylik kurs (4 quti = 2,400,000 so'm) olmoqchi bo'lsa, unga zo'r aksiyamiz borligini ayting: 2 quti olsa, yana 2 qutini tekinga (bonus) qo'shib beramiz. To'lovni oldindan qilmaydi, mahsulot borganda to'laydi. 
-
-Mijozga narxni aytishdan oldin uning kasallik tarixini to'liq eshitib oldingizmi?`;
-  }
-  if(lowerMsg.includes("ichiladi") || lowerMsg.includes("qanday")) {
-    return `Juda oson: 1 qutida 45 ta choy bo'ladi. Ertalab va kechqurun 1 tadan paketni 200 ml qaynagan suvga damlab, to'q qoringa ichishi kerak. Bitta quti roppa-rosa 22,5 kunga yetadi.
-
-Mijozga tarkibidagi toza asal va qizil jenshen ta'mini mazali qilishini aytib o'tdingizmi?`;
-  }
-  if(lowerMsg.includes("o'ylab") || lowerMsg.includes("qimmat")) {
-    return `Mijoz "o'ylab ko'raman" yoki "qimmat" desa, aslo suhbatni to'xtatmang. 
-"Sog'liq uchun sarmoya doim o'ylantiradi, tushunaman. Tarkibidagi asl qizil jenshen va ashvaganda arzon turmaydi, lekin u beradigan energiya va natija bu puldan ancha qadrli. Sizni ko'proq narxi ikkilantiryaptimi yoki yordam berishiga ishonchingiz komil emasmi?" - deb so'rang. Pul qaytarish kafolatini umuman tilga olmang!
-
-Hozir mijozga shu savolni berib ko'rasizmi?`;
-  }
-  
-  return `Sizning vaziyatingiz tushunarli. Abihayat tarkibidagi baxmal va ashvaganda mijozning immun tizimini ko'tarib, xotirjamlik beradi. Agar u ikkilanayotgan bo'lsa, davolanishning 3 oylik kursi natijasini tushuntiring. 
-
-Ayni paytda mijoz aynan qaysi og'riq yoki muammodan shikoyat qilyapti?`;
-}
-
-// Interfeysni chizish
-function render() {
-  document.querySelectorAll(".nav button").forEach(b => {
-    b.classList.toggle("active", b.dataset.tab === state.tab);
-    b.onclick = () => { state.tab = b.dataset.tab; render(); };
-  });
-  
-  const main = document.getElementById("main");
-  if(state.tab === "chat") main.innerHTML = renderChat();
-  if(state.tab === "call") main.innerHTML = renderCall();
-  attachHandlers();
-}
-
-function renderChat() {
-  return `
-  <div class="chat-wrap">
-    <h2 class="page-title">ALIVIDA AI Murabbiy</h2>
-    <p class="page-desc">Mijozlar bilan suhbatdagi muammolarni yozing. AI sizga qanday yo'l tutishni ko'rsatadi.</p>
-    
-    <div class="messages" id="messages">
-      ${state.messages.length === 0 ? `<div style="text-align:center; color:var(--text-muted); margin-top:40px;">Suhbatni boshlang. Masalan: "Mijoz qimmat deyapti, nima deb javob beray?"</div>` : ""}
-      ${state.messages.map(m => `
-        <div class="msg ${m.role}">
-          ${m.role === 'ai' ? '<div style="font-size:12px; color:var(--gold); margin-bottom:6px; font-weight:700;">ALIVIDA AI</div>' : ''}
-          ${m.text}
-        </div>
-      `).join("")}
-      
-      ${state.isTyping ? `
-        <div class="msg ai typing-indicator" id="typing">
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        </div>
-      ` : ""}
-    </div>
-    
-    <div class="chat-input">
-      <input type="text" id="chatInput" placeholder="Savolingizni yozing..." autocomplete="off" />
-      <button class="btn-send" id="sendBtn">➤</button>
-    </div>
-  </div>`;
-}
-
-function renderCall() {
-  return `
-  <div class="chat-wrap" style="max-width: 700px;">
-    <h2 class="page-title">Qo'ng'iroq tahlili</h2>
-    <p class="page-desc">Mijoz bilan bo'lgan suhbat audiosini yuklang. Tizim avtomatik tahlil qilib, xatolarni ko'rsatadi.</p>
-    
-    <input type="file" id="audioUpload" accept="audio/mp3, audio/wav, audio/m4a" style="display: none;" />
-    
-    <div class="upload-area" id="uploadArea">
-      <div class="upload-icon">📁</div>
-      <div class="upload-text">Audio faylni tanlash uchun bosing</div>
-      <div class="upload-sub">.mp3, .wav, .m4a formatlar qo'llab-quvvatlanadi</div>
-    </div>
-    
-    <div class="audio-player-container" id="playerContainer">
-      <div class="audio-info">
-        <div class="audio-name">
-          <span>🎵</span> <span id="fileName">Suhbat.mp3</span>
-        </div>
-        <div class="visualizer" id="visualizer">
-          <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        </div>
-      </div>
-      <audio id="audioPlayer" controls></audio>
-    </div>
-    
-    <button class="btn-analyze" id="analyzeBtn">Audio faylni tahlil qilish</button>
-    
-    <div class="result-card" id="resultCard">
-      <div class="badge">Tahlil yakunlandi</div>
-      <div class="result-title">Suhbat xulosasi</div>
-      <div style="color:var(--text); line-height:1.6; font-size:15px; margin-bottom: 20px;">
-        Menejer mahsulotning tabiiy tarkibini yaxshi tushuntirgan. Ammo narx aytilayotganda 2+2 aksiyasi esdan chiqqan. Shuningdek, mijozga qarshi savol berish kam bo'lgan.
-      </div>
-      <div class="result-title" style="font-size: 15px; color: #fff;">Skript tekshiruvi:</div>
-      <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
-        <div><span style="color:var(--success)">✔</span> Abihayat tarkibi aytildi</div>
-        <div><span style="color:var(--success)">✔</span> Qanday ichilishi tushuntirildi</div>
-        <div><span style="color:var(--danger)">✕</span> 2 quti xaridga 2 quti bonus aksiyasi aytilmadi</div>
-        <div><span style="color:var(--success)">✔</span> Pul qaytarish kafolati ishlatilmadi (To'g'ri)</div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function attachHandlers() {
-  // Chat Handlers
-  if (state.tab === "chat") {
-    const input = document.getElementById("chatInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const msgs = document.getElementById("messages");
-    
-    const sendMessage = async () => {
-      const text = input.value.trim();
-      if (!text || state.isTyping) return;
-      
-      state.messages.push({ role: "user", text });
-      state.isTyping = true;
-      input.value = "";
-      render();
-      
-      const box = document.getElementById("messages");
-      box.scrollTop = box.scrollHeight;
-      
-      const reply = await mockAIChat(text);
-      state.messages.push({ role: "ai", text: reply });
-      state.isTyping = false;
-      render();
-      
-      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
-      document.getElementById("chatInput").focus();
+    // GLOBAL STATE MANAGEMENT
+    const state = {
+        messages: [],
+        currentView: 'chat'
     };
-    
-    sendBtn.onclick = sendMessage;
-    input.onkeydown = (e) => e.key === "Enter" && sendMessage();
-    input.focus();
-  }
 
-  // Call Analysis Handlers
-  if (state.tab === "call") {
-    const uploadArea = document.getElementById("uploadArea");
-    const fileInput = document.getElementById("audioUpload");
-    const playerContainer = document.getElementById("playerContainer");
-    const audioPlayer = document.getElementById("audioPlayer");
-    const fileNameDisplay = document.getElementById("fileName");
-    const visualizer = document.getElementById("visualizer");
-    const analyzeBtn = document.getElementById("analyzeBtn");
-    const resultCard = document.getElementById("resultCard");
-
-    uploadArea.onclick = () => fileInput.click();
-
-    fileInput.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        fileNameDisplay.textContent = file.name;
-        const url = URL.createObjectURL(file);
-        audioPlayer.src = url;
+    // AI LOGIC (STRICT)
+    function getAIResponse(input) {
+        const msg = input.toLowerCase();
         
-        uploadArea.style.display = "none";
-        playerContainer.style.display = "block";
-        analyzeBtn.style.display = "block";
-        resultCard.style.display = "none";
-      }
-    };
+        // 1. STRICT SALOM CHECK
+        if (msg === "salom" || msg === "assalomu alaykum" || msg.includes("salom")) {
+            return "Salom, bugungi kunlik rejangiz qancha, nima muammolar bo'lsa so'rang yordam beraman.";
+        }
+        
+        // 2. PRODUCT INFO LOGIC
+        if (msg.includes("narx") || msg.includes("qancha")) {
+            return "1 quti Abihayat — 600,000 so'm. 4 quti (kurs) — 2,400,000 so'm. Aksiya: 2 ta olsangiz, yana 2 ta bonus qo'shib beramiz. To'lov oldindan emas, mahsulot borganda.";
+        }
 
-    // Equalizer animatsiyasini audio holatiga ulash
-    audioPlayer.onplay = () => visualizer.classList.add("playing");
-    audioPlayer.onpause = () => visualizer.classList.remove("playing");
-    audioPlayer.onended = () => visualizer.classList.remove("playing");
+        // 3. FALLBACK
+        return "Tushunarli. Abihayat tarkibi: asal, jenshen, ashvaganda, baxmal. 1 quti 22,5 kunga yetadi. Mijozning aynan qaysi shikoyati bo'yicha ko'rsatma kerak?";
+    }
 
-    analyzeBtn.onclick = () => {
-      analyzeBtn.disabled = true;
-      analyzeBtn.textContent = "AI tahlil qilmoqda...";
-      
-      // Tahlil qilinish jarayoni simulyatsiyasi
-      setTimeout(() => {
-        analyzeBtn.style.display = "none";
-        resultCard.style.display = "block";
-      }, 2000);
-    };
-  }
-}
+    function switchView(view) {
+        state.currentView = view;
+        const main = document.getElementById('mainView');
+        
+        if (view === 'chat') {
+            main.innerHTML = `
+                <div class="chat-area">
+                    <div id="msgBox" style="display:flex; flex-direction:column;"></div>
+                    <div style="margin-top:20px; display:flex;">
+                        <input type="text" id="userInput" style="flex:1; padding:15px; background:#1e293b; border:none; color:white; border-radius:8px;">
+                        <button onclick="handleSend()" style="padding:15px; background:var(--gold); border:none; border-radius:8px; margin-left:10px;">Yuborish</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            main.innerHTML = `
+                <div class="chat-area">
+                    <h2>Audio fayl yuklash</h2>
+                    <div class="upload-section" onclick="document.getElementById('audioFile').click()">
+                        <p>Audio faylni tanlang (MP3/WAV)</p>
+                        <input type="file" id="audioFile" accept="audio/*" style="display:none">
+                    </div>
+                    <div id="fileStatus" style="margin-top:20px; color:var(--gold)"></div>
+                </div>
+            `;
+            // File listener
+            document.getElementById('audioFile').onchange = (e) => {
+                document.getElementById('fileStatus').innerText = "Tanlandi: " + e.target.files[0].name;
+            };
+        }
+    }
 
-render();
+    function handleSend() {
+        const input = document.getElementById('userInput');
+        const msg = input.value;
+        if (!msg) return;
+        
+        state.messages.push({role: 'user', text: msg});
+        state.messages.push({role: 'ai', text: getAIResponse(msg)});
+        
+        input.value = '';
+        renderMessages();
+    }
+
+    function renderMessages() {
+        const box = document.getElementById('msgBox');
+        box.innerHTML = state.messages.map(m => `
+            <div class="message ${m.role}">${m.text}</div>
+        `).join('');
+    }
+
+    // Initialize
+    switchView('chat');
 </script>
 </body>
 </html>
