@@ -1,16 +1,30 @@
+
 {
-  "name": "sotuv-ai-yordamchi",
+  "name": "audio-call-analysis",
   "version": "1.0.0",
-  "description": "Sotuv menejeri uchun AI yordamchi va qo'ng'iroq tahlili",
+  "description": "Production-ready Audio Call Analysis for Sales Quality Assurance",
+  "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
-  "engines": {
-    "node": ">=18"
-  },
+  "keywords": [
+    "audio-analysis",
+    "sales-qa",
+    "gemini-ai"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
+
+
