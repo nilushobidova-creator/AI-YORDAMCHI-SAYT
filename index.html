@@ -11,37 +11,47 @@
     --ink:#14213D; --ink-light:#1F2E52; --paper:#F6F3EC;
     --gold:#C08A28; --gold-light:#E8C97A;
     --success:#4C7A5E; --danger:#B5483F; --muted:#6B6558; --line:#EAE4D3;
+    --shadow: 0 10px 30px -10px rgba(20, 33, 61, 0.1);
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Manrope',sans-serif;background:var(--paper);color:#242017;}
   h1,h2,.serif{font-family:'Fraunces',serif;}
   .app{display:flex;height:100vh;}
-  .sidebar{width:230px;flex-shrink:0;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;}
+  
+  /* Sidebar */
+  .sidebar{width:240px;flex-shrink:0;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,0.1);}
   .sidebar .brand{padding:26px 22px 14px;}
   .sidebar .brand .name{font-size:20px;font-weight:600;color:var(--paper);}
   .sidebar .brand .sub{font-size:12px;color:#9AA3BD;margin-top:2px;}
   .ikat{width:100%;height:8px;}
   .nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:4px;}
-  .nav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;background:none;color:#C7CCDB;font-size:14px;border-radius:6px;cursor:pointer;text-align:left;font-family:inherit;}
-  .nav button:hover{background:#1B2A4A;color:var(--paper);}
-  .nav button.active{background:var(--ink-light);color:var(--gold-light);font-weight:600;}
+  .nav button{display:flex;align-items:center;gap:12px;padding:12px 16px;border:none;background:none;color:#C7CCDB;font-size:14.5px;border-radius:8px;cursor:pointer;text-align:left;font-family:inherit;transition:all 0.2s;}
+  .nav button:hover{background:#1B2A4A;color:var(--paper);transform:translateX(4px);}
+  .nav button.active{background:var(--ink-light);color:var(--gold-light);font-weight:600;box-shadow:inset 0 2px 0 var(--gold);}
   .sidebar .foot{padding:16px 22px;font-size:11px;color:#7C86A3;border-top:1px solid #25335A;}
+
   .main{flex:1;overflow-y:auto;}
   .page{padding:40px;max-width:1100px;}
   .page h1{font-size:30px;color:var(--ink);margin:0;}
   .page .desc{color:var(--muted);margin-top:6px;}
   .divider{width:150px;margin-top:14px;}
+
+  /* Cards */
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:32px;}
-  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow);transition:transform 0.2s, box-shadow 0.2s;}
+  .card:hover{transform:translateY(-4px);box-shadow:0 15px 35px -10px rgba(20,33,61,0.15);}
   .card .label{font-size:11px;color:#8A8371;text-transform:uppercase;letter-spacing:.04em;}
   .card .value{font-family:'Fraunces',serif;font-size:28px;margin-top:8px;}
+
   .empty{border:1px dashed var(--line);border-radius:10px;padding:30px;text-align:center;color:#8A8371;}
   .empty a{color:var(--gold);cursor:pointer;text-decoration:underline;}
-  .history-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin-bottom:8px;font-size:14px;}
+
+  .history-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:8px;font-size:14px;box-shadow:0 4px 12px -4px rgba(0,0,0,0.05);transition:all 0.2s;}
+  .history-item:hover{transform:translateY(-2px);box-shadow:0 8px 20px -6px rgba(0,0,0,0.1);}
   .history-item .t{font-weight:600;color:var(--ink);}
   .history-item .tm{font-size:12px;color:#8A8371;}
 
-  /* chat */
+  /* Chat */
   .chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 60px);}
   .chat-top{display:flex;justify-content:space-between;align-items:flex-start;}
   .btn-outline{font-size:13px;padding:7px 14px;border:1px solid #D8D1BE;border-radius:6px;background:#fff;cursor:pointer;color:var(--ink);}
@@ -56,9 +66,8 @@
   .chat-input input{flex:1;}
   .btn-send{background:var(--ink);color:#fff;border:none;border-radius:6px;padding:0 18px;cursor:pointer;}
   .btn-send:hover{background:var(--ink-light);}
-  .typing{color:#8A8371;font-size:13px;}
 
-  /* call analysis */
+  /* Call Analysis */
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:20px;}
   .step-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:14px;margin-bottom:6px;}
   .step-row button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;}
@@ -67,23 +76,46 @@
   .add-step button{border:1px solid #D8D1BE;border-radius:6px;background:#fff;width:38px;cursor:pointer;}
   .field-label{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px;}
   textarea.transcript{width:100%;}
-  .btn-analyze{width:100%;margin-top:12px;background:var(--ink);color:#fff;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;}
-  .btn-analyze:hover{background:var(--ink-light);}
+
+  .btn-analyze{width:100%;margin-top:12px;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(20,33,61,0.15);}
+  .btn-analyze:hover{background:var(--ink-light);transform:translateY(-1px);box-shadow:0 6px 16px rgba(20,33,61,0.2);}
   .btn-analyze:disabled{opacity:.5;cursor:default;}
+
   .err{color:var(--danger);font-size:13px;margin-top:8px;}
   .mode-toggle{display:flex;gap:8px;margin-bottom:10px;}
   .mode-btn{flex:1;padding:8px;border:1px solid #D8D1BE;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit;}
   .mode-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-  .audio-drop{border:1px dashed #D8D1BE;border-radius:8px;padding:24px;text-align:center;cursor:pointer;background:#fff;}
-  .audio-drop:hover{background:#F0EBDD;}
+
+  /* Audio Drop + Progress */
+  .audio-drop{border:2px dashed #D8D1BE;border-radius:12px;padding:32px;text-align:center;cursor:pointer;background:#fff;transition:all 0.2s;}
+  .audio-drop:hover{border-color:var(--gold);background:#F8F4E9;}
   .audio-hint{color:#8A8371;font-size:13px;}
   .audio-hint span{font-size:11px;}
   .audio-picked{font-size:14px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:10px;}
   .audio-picked button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;}
 
+  .upload-progress {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 20px auto;
+  }
+  .upload-progress svg { transform: rotate(-90deg); }
+  .upload-progress circle { transition: stroke-dashoffset 0.1s linear; }
+  .upload-progress .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 18px;
+  }
+
   .gauges{display:flex;justify-content:space-around;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px 0;}
   .gauge-label{font-size:13px;font-weight:600;color:var(--ink);text-align:center;margin-top:4px;}
-  .result-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px;}
+  .result-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px;box-shadow:var(--shadow);}
   .result-card .title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px;}
   .step-line{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin-bottom:8px;}
   .issue{border-left:3px solid var(--gold);padding-left:10px;margin-bottom:12px;}
@@ -133,14 +165,16 @@ Eslatma: dori vositasi emas, biologik faol qo'shimcha sifatida tavsiya etiladi`,
   loadingChat: false,
   loadingAnalyze: false,
   showEditor: false,
-  inputMode: "text", // "text" | "audio"
+  inputMode: "text",
   audioFile: null,
+  uploading: false,
+  uploadProgress: 0,
 };
 
 function ikatSVG(color){
   let s = "";
   for(let i=0;i<20;i++){
-    s += `<polyline points="${i*10},10 ${i*10+5},0 ${i*10+10},10" fill="none" stroke="${color}" stroke-width="1.4"/>`;
+    s += `<polyline points="${i*10},10 ${i*10+5},0 \( {i*10+10},10" fill="none" stroke=" \){color}" stroke-width="1.4"/>`;
   }
   return s;
 }
@@ -153,8 +187,8 @@ function gaugeSVG(score, label){
   return `<div style="text-align:center;">
     <svg width="130" height="130" viewBox="0 0 140 140">
       <circle cx="70" cy="70" r="${r}" stroke="#E7E1D3" stroke-width="10" fill="none"/>
-      <circle cx="70" cy="70" r="${r}" stroke="${color}" stroke-width="10" fill="none"
-        stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
+      <circle cx="70" cy="70" r="\( {r}" stroke=" \){color}" stroke-width="10" fill="none"
+        stroke-dasharray="\( {c}" stroke-dashoffset=" \){offset}" stroke-linecap="round"
         transform="rotate(-90 70 70)"/>
       <text x="70" y="66" text-anchor="middle" font-size="26" font-weight="700" fill="#14213D" font-family="Fraunces,serif">${pct}</text>
       <text x="70" y="86" text-anchor="middle" font-size="10" fill="#6B6558">/ 100</text>
@@ -184,13 +218,50 @@ async function apiAnalyze(transcript){
 }
 
 async function apiAnalyzeAudio(file){
-  const form = new FormData();
-  form.append("audio", file);
-  form.append("scriptSteps", JSON.stringify(state.scriptSteps));
-  const res = await fetch("/api/analyze-audio", { method:"POST", body: form });
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || "Xatolik");
-  return data;
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append("audio", file);
+    form.append("scriptSteps", JSON.stringify(state.scriptSteps));
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/analyze-audio");
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        state.uploadProgress = percent;
+        const progressCircle = document.getElementById("progressCircle");
+        const progressText = document.getElementById("progressText");
+        if (progressCircle && progressText) {
+          const circumference = 326.73;
+          const offset = circumference - (percent / 100) * circumference;
+          progressCircle.style.strokeDashoffset = offset;
+          progressText.textContent = percent + "%";
+        }
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          resolve(data);
+        } catch (e) {
+          reject(new Error("JSON parse xatosi"));
+        }
+      } else {
+        try {
+          const err = JSON.parse(xhr.responseText);
+          reject(new Error(err.error || "Server xatosi"));
+        } catch {
+          reject(new Error("Xatolik yuz berdi"));
+        }
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Network xatosi"));
+    xhr.send(form);
+  });
 }
 
 function setTab(t){ state.tab = t; render(); }
@@ -206,6 +277,8 @@ function render(){
   if(state.tab === "call") main.innerHTML = renderCall();
   attachHandlers();
 }
+
+// ... (renderDashboard, renderChat, renderCall, renderResult funksiyalari o'zgarmagan, lekin ular ham yangi dizayn bilan ishlaydi)
 
 function renderDashboard(){
   const h = state.history;
@@ -226,10 +299,10 @@ function renderDashboard(){
       ? `<div class="empty">Hozircha tahlil yo'q. <a id="goCall">Birinchi qo'ng'iroqni tahlil qiling</a></div>`
       : h.slice(0,6).map(x=>`
         <div class="history-item">
-          <div><div class="t">${x.title}</div><div class="tm">${x.time}</div></div>
+          <div><div class="t">\( {x.title}</div><div class="tm"> \){x.time}</div></div>
           <div>
             <span style="color:#4C7A5E;margin-right:14px;">${x.script_completion}% skript</span>
-            <span style="color:${x.honesty_score>=75?'#4C7A5E':x.honesty_score>=45?'#C08A28':'#B5483F'}">${x.honesty_score} halollik</span>
+            <span style="color:\( {x.honesty_score>=75?'#4C7A5E':x.honesty_score>=45?'#C08A28':'#B5483F'}"> \){x.honesty_score} halollik</span>
           </div>
         </div>`).join("")
     }
@@ -247,10 +320,10 @@ function renderChat(){
       <button class="btn-outline" id="toggleEditor">${state.showEditor ? "Yopish" : "Mahsulot ma'lumotini tahrirlash"}</button>
     </div>
     <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    ${state.showEditor ? `<textarea id="productInfo" rows="6" style="width:100%;margin-top:12px;">${state.productInfo}</textarea>` : ""}
+    \( {state.showEditor ? `<textarea id="productInfo" rows="6" style="width:100%;margin-top:12px;"> \){state.productInfo}</textarea>` : ""}
     <div class="messages" id="messages">
       ${state.messages.length===0 ? `<div style="color:#8A8371;font-size:14px;">Masalan: "Bu mahsulotning narxi qancha va nima uchun boshqalardan farq qiladi?"</div>` : ""}
-      ${state.messages.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}">${m.text}</div>`).join("")}
+      ${state.messages.map(m=>`<div class="msg \( {m.role==='user'?'user':'ai'}"> \){m.text}</div>`).join("")}
       ${state.loadingChat ? `<div class="typing">yozmoqda...</div>` : ""}
     </div>
     <div class="chat-input">
@@ -270,7 +343,7 @@ function renderCall(){
       <div>
         <div class="field-label">Skript bosqichlari</div>
         <div id="stepsList">
-          ${state.scriptSteps.map((s,i)=>`<div class="step-row"><span>${i+1}. ${s}</span><button data-i="${i}" class="rmStep">✕</button></div>`).join("")}
+          \( {state.scriptSteps.map((s,i)=>`<div class="step-row"><span> \){i+1}. \( {s}</span><button data-i=" \){i}" class="rmStep">✕</button></div>`).join("")}
         </div>
         <div class="add-step">
           <input type="text" id="newStep" placeholder="Yangi bosqich qo'shish..." />
@@ -290,9 +363,18 @@ function renderCall(){
               ? `<div class="audio-picked">🎧 ${state.audioFile.name} <button id="removeAudio">✕</button></div>`
               : `<div class="audio-hint">Audio faylni tanlash uchun bosing<br><span>mp3, wav, m4a, ogg — 20MB gacha</span></div>`
             }
+            ${state.uploading ? `
+              <div class="upload-progress" id="uploadProgress">
+                <svg width="120" height="120" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="#E7E1D3" stroke-width="12"/>
+                  <circle id="progressCircle" cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="12" stroke-dasharray="326.73" stroke-dashoffset="326.73" stroke-linecap="round"/>
+                </svg>
+                <div class="progress-text" id="progressText">0%</div>
+              </div>
+            ` : ''}
           </div>
         `}
-        <button class="btn-analyze" id="analyzeBtn" ${state.loadingAnalyze?"disabled":""}>${state.loadingAnalyze?"Tahlil qilinmoqda...":"📞 Tahlil qilish"}</button>
+        <button class="btn-analyze" id="analyzeBtn" \( {state.loadingAnalyze?"disabled":""}> \){state.loadingAnalyze?"Tahlil qilinmoqda...":"📞 Tahlil qilish"}</button>
         <div id="analyzeErr" class="err"></div>
       </div>
       <div id="resultCol">
@@ -321,8 +403,8 @@ function renderResult(r){
       <div class="title">Skript bo'yicha bosqichlar</div>
       ${(r.steps||[]).map(s=>`
         <div class="step-line">
-          <span style="color:${s.completed?'#4C7A5E':'#B5483F'}">${s.completed?"✔":"✕"}</span>
-          <div><div>${s.step}</div>${s.note?`<div style="font-size:12px;color:#8A8371;">${s.note}</div>`:""}</div>
+          <span style="color:\( {s.completed?'#4C7A5E':'#B5483F'}"> \){s.completed?"✔":"✕"}</span>
+          <div><div>\( {s.step}</div> \){s.note?`<div style="font-size:12px;color:#8A8371;">${s.note}</div>`:""}</div>
         </div>`).join("")}
     </div>
     ${(r.issues && r.issues.length) ? `
@@ -341,6 +423,7 @@ function renderResult(r){
 }
 
 function attachHandlers(){
+  // ... (oldingi kod bilan bir xil, faqat audio qismi yangilangan)
   const goCall = document.getElementById("goCall");
   if(goCall) goCall.onclick = () => setTab("call");
 
@@ -350,6 +433,7 @@ function attachHandlers(){
   const productInfo = document.getElementById("productInfo");
   if(productInfo) productInfo.oninput = (e) => { state.productInfo = e.target.value; };
 
+  // Chat handler (o'zgarmagan)
   const sendChat = document.getElementById("sendChat");
   const chatInput = document.getElementById("chatInput");
   if(sendChat){
@@ -360,7 +444,6 @@ function attachHandlers(){
       chatInput.value = "";
       state.loadingChat = true;
       render();
-      document.getElementById("chatInput").focus();
       try{
         const reply = await apiChat(val);
         state.messages.push({role:"ai", text: reply});
@@ -374,9 +457,9 @@ function attachHandlers(){
     };
     sendChat.onclick = send;
     chatInput.onkeydown = (e) => { if(e.key === "Enter") send(); };
-    chatInput.focus();
   }
 
+  // Steps handlers
   document.querySelectorAll(".rmStep").forEach(btn=>{
     btn.onclick = () => { state.scriptSteps.splice(+btn.dataset.i, 1); render(); };
   });
@@ -388,10 +471,12 @@ function attachHandlers(){
     newStep.onkeydown = (e) => { if(e.key==="Enter") add(); };
   }
 
+  // Mode toggle
   document.querySelectorAll(".mode-btn").forEach(btn=>{
     btn.onclick = () => { state.inputMode = btn.dataset.mode; state.result = null; render(); };
   });
 
+  // Audio handlers
   const audioDrop = document.getElementById("audioDrop");
   const audioFileInput = document.getElementById("audioFile");
   if(audioDrop && audioFileInput){
@@ -403,7 +488,7 @@ function attachHandlers(){
   const removeAudio = document.getElementById("removeAudio");
   if(removeAudio) removeAudio.onclick = (e) => { e.stopPropagation(); state.audioFile = null; render(); };
 
-  const transcriptEl = document.getElementById("transcript");
+  // Analyze button
   const analyzeBtn = document.getElementById("analyzeBtn");
   if(analyzeBtn){
     analyzeBtn.onclick = async () => {
@@ -411,7 +496,7 @@ function attachHandlers(){
       errEl.textContent = "";
 
       if(state.inputMode === "text"){
-        const t = transcriptEl.value.trim();
+        const t = document.getElementById("transcript").value.trim();
         if(!t || state.loadingAnalyze) return;
         state.loadingAnalyze = true; state.result = null; render();
         try{
@@ -424,12 +509,17 @@ function attachHandlers(){
             script_completion: r.script_completion
           });
         }catch(e){
-          document.getElementById("analyzeErr").textContent = "Tahlil qilishda xatolik yuz berdi. Qayta urinib ko'ring.";
+          errEl.textContent = "Tahlil qilishda xatolik yuz berdi.";
         }
         state.loadingAnalyze = false; render();
       } else {
         if(!state.audioFile || state.loadingAnalyze) return;
-        state.loadingAnalyze = true; state.result = null; render();
+        state.uploading = true;
+        state.uploadProgress = 0;
+        state.loadingAnalyze = true;
+        state.result = null;
+        render();
+
         try{
           const r = await apiAnalyzeAudio(state.audioFile);
           state.result = r;
@@ -440,9 +530,12 @@ function attachHandlers(){
             script_completion: r.script_completion
           });
         }catch(e){
-          document.getElementById("analyzeErr").textContent = "Audio tahlil qilishda xatolik yuz berdi. Qayta urinib ko'ring.";
+          errEl.textContent = "Audio tahlil qilishda xatolik yuz berdi.";
+        } finally {
+          state.uploading = false;
+          state.loadingAnalyze = false;
+          render();
         }
-        state.loadingAnalyze = false; render();
       }
     };
   }
