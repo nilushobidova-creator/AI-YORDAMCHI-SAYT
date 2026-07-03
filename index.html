@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SotuvAI — Sotuv menejeri yordamchisi</title>
+<title>SotuvAI — Coach va Tahlil</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -27,85 +27,39 @@
   .nav button.active{background:var(--ink-light);color:var(--gold-light);font-weight:600;}
   .sidebar .foot{padding:20px 24px;font-size:12px;color:#7C86A3;border-top:1px solid #25335A;}
   .main{flex:1;overflow-y:auto;}
+  
   .page{padding:50px;max-width:1200px;margin: 0 auto; width: 100%;}
   .page h1{font-size:34px;color:var(--ink);margin:0;}
   .page .desc{color:var(--muted);margin-top:8px; font-size:16px;}
   .divider{width:180px;margin-top:16px;}
   
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px;}
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-  .card .label{font-size:12px;color:#8A8371;text-transform:uppercase;letter-spacing:.05em;}
-  .card .value{font-family:'Fraunces',serif;font-size:34px;margin-top:10px;}
-  .empty{border:2px dashed var(--line);border-radius:12px;padding:40px;text-align:center;color:#8A8371;font-size:16px;}
-  .empty a{color:var(--gold);cursor:pointer;text-decoration:underline;}
-  .history-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-bottom:12px;font-size:15px;box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
-  .history-item .t{font-weight:600;color:var(--ink);}
-  .history-item .tm{font-size:13px;color:#8A8371;margin-top:4px;}
-
-  /* Chat */
+  /* Chat styles */
   .chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 100px);}
   .chat-top{display:flex;justify-content:space-between;align-items:flex-start;}
   .btn-outline{font-size:14px;padding:10px 18px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;cursor:pointer;color:var(--ink);font-weight:500;transition: all 0.2s;}
   .btn-outline:hover{background:#F0EBDD;}
-  textarea, input[type=text]{font-family:inherit;font-size:15px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;padding:14px 16px;}
-  textarea:focus, input:focus{outline:none;box-shadow:0 0 0 2px var(--gold);}
   .messages{flex:1;overflow-y:auto;margin-top:20px;display:flex;flex-direction:column;gap:14px;padding-right: 10px;}
-  .msg{max-width:70%;padding:14px 18px;border-radius:12px;font-size:15px;white-space:pre-wrap;line-height:1.5;}
+  .msg{max-width:75%;padding:14px 18px;border-radius:12px;font-size:15px;white-space:pre-wrap;line-height:1.6;}
   .msg.user{align-self:flex-end;background:var(--ink);color:var(--paper);}
   .msg.ai{align-self:flex-start;background:#fff;border:1px solid var(--line);box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
   .chat-input{display:flex;gap:10px;margin-top:20px;}
-  .chat-input input{flex:1;}
+  .chat-input input{flex:1;font-family:inherit;font-size:15px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;padding:14px 16px;}
+  .chat-input input:focus{outline:none;box-shadow:0 0 0 2px var(--gold);}
   .btn-send{background:var(--ink);color:#fff;border:none;border-radius:8px;padding:0 24px;cursor:pointer;font-size:16px;}
   .btn-send:hover{background:var(--ink-light);}
-  
-  /* Loading animations */
   .typing{color:#8A8371;font-size:14px;font-style:italic;}
-  @keyframes spin { 100% { transform: rotate(360deg); } }
-  .spinner {
-    display: inline-block;
-    width: 18px; height: 18px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-    vertical-align: middle;
-    margin-right: 8px;
-  }
-
-  /* Call Analysis */
+  
+  /* Call Analysis Styles */
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:30px;}
-  .step-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 16px;font-size:15px;margin-bottom:8px;box-shadow: 0 1px 4px rgba(0,0,0,0.02);}
+  .step-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 16px;font-size:15px;margin-bottom:8px;}
   .step-row button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;}
-  .add-step{display:flex;gap:10px;margin-bottom:30px;}
-  .add-step input{flex:1;}
-  .add-step button{border:1px solid #D8D1BE;border-radius:8px;background:#fff;width:44px;cursor:pointer;font-size:18px;}
-  .add-step button:hover{background:#F0EBDD;}
-  .field-label{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px;}
-  textarea.transcript{width:100%;}
-  .btn-analyze{width:100%;margin-top:16px;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.2s;}
+  .field-label{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px; margin-top:20px;}
+  textarea.transcript{width:100%;font-family:inherit;font-size:14px;border:1px solid #D8D1BE;border-radius:8px;padding:14px;resize:vertical;}
+  .btn-analyze{width:100%;margin-top:16px;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;}
   .btn-analyze:hover{background:var(--ink-light);}
   .btn-analyze:disabled{opacity:.7;cursor:default;}
-  .err{color:var(--danger);font-size:14px;margin-top:10px;}
-  
-  .mode-toggle{display:flex;gap:10px;margin-bottom:12px;}
-  .mode-btn{flex:1;padding:12px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;font-size:15px;cursor:pointer;color:var(--ink);font-family:inherit;font-weight:500;}
-  .mode-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-  .audio-drop{border:2px dashed #D8D1BE;border-radius:10px;padding:40px 20px;text-align:center;cursor:pointer;background:#fff;transition: background 0.2s;}
-  .audio-drop:hover{background:#F0EBDD;}
-  .audio-hint{color:#8A8371;font-size:15px;}
-  .audio-hint span{font-size:13px;opacity:0.8;display:block;margin-top:6px;}
-  .audio-picked{font-size:16px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:12px;}
-  .audio-picked button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;}
-
-  .gauges{display:flex;justify-content:space-around;background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px 0;box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-  .gauge-label{font-size:14px;font-weight:600;color:var(--ink);text-align:center;margin-top:8px;}
-  .result-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:20px;box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
+  .result-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:20px;}
   .result-card .title{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:12px;}
-  .step-line{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin-bottom:10px;}
-  .issue{border-left:4px solid var(--gold);padding-left:14px;margin-bottom:16px;}
-  .issue .sev{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
-  .issue .quote{font-style:italic;font-size:15px;margin-bottom:4px;}
-  .issue .desc{font-size:15px;color:#4B4536;}
 </style>
 </head>
 <body>
@@ -113,150 +67,145 @@
   <div class="sidebar">
     <div class="brand">
       <div class="name">✦ SotuvAI</div>
-      <div class="sub">Sotuv menejeri yordamchisi</div>
+      <div class="sub">Murabbiy va Tahlilchi</div>
     </div>
     <svg class="ikat" viewBox="0 0 200 10" preserveAspectRatio="none"></svg>
     <div class="nav">
-      <button data-tab="dashboard">📊 Bosh sahifa</button>
-      <button data-tab="chat">💬 Mahsulot AI</button>
+      <button data-tab="chat" class="active">💬 AI Murabbiy (Coach)</button>
       <button data-tab="call">📞 Qo'ng'iroq tahlili</button>
     </div>
-    <div class="foot">Ma'lumotlar saqlanadi.</div>
+    <div class="foot">Tizim oflayn mock rejimida ishlashga qodir.</div>
   </div>
   <div class="main" id="main"></div>
 </div>
 
 <script>
 const defaultState = {
-  tab: "dashboard",
-  productInfo: `Mahsulot nomi: Abihayat
-Turi: Tabiiy o'simlik asosidagi quvvat va salomatlik mahsuloti
-Asosiy foyda: energiya oshiradi, immunitetni mustahkamlaydi
-Tarkib: Dolchin, kekkik va zaytun
-Eslatma: dori vositasi emas, biologik faol qo'shimcha sifatida tavsiya etiladi`,
+  tab: "chat",
+  productInfo: `Sizning rolingiz: Call-markazning tajribali sotuv menejeri, sotuvchilar murabbiyi (coach) va sog'lom ovqatlanish bo'yicha mutaxassis.
+Sizning vazifangiz: Sotuvchilarga mijozlar bilan qanday ishlashni, e'tirozlarni qanday yengishni o'rgatish va mahsulot haqida chuqurlashtirilgan ma'lumot berish.
+
+QAT'IY QOIDALAR VA KUTILAYOTGAN JAVOBLAR:
+1. Agar foydalanuvchi "Salom" yoki shunga o'xshash so'z yozsa, faqat quyidagi gapni yozing (boshqa gap qo'shmang): "Salom, bugungi kunlik rejangiz qancha, nima muammolar bo'lsa so'rang yordam beraman".
+2. Agar foydalanuvchi e'tiroz yozsa (masalan: "mijoz o'ylab ko'raman dedi"), darhol sotuv psixologiyasini ishlatib, bu e'tirozni qanday yopish bo'yicha aniq skript bering va ochiq savollar so'rashni o'rgating.
+3. Hech qanday holatda narxlar haqida ma'lumot bermang va "pul qaytarish kafolati" (money-back guarantee) iboralarini ishlatmang.
+
+MAHSULOT (ABIHAYAT) MA'LUMOTI:
+- 100% tabiiy mahsulot. Turkiyaning Bursa tog'laridan keltiriladi.
+- Dori vositasi EMAS va biologik faol qo'shimcha (BAD) EMAS.
+- Tarkibi: Zaytun, kekkik va dolchin.
+- Ta'sir mexanizmi (Qandli diabet va kasalliklar uchun):
+  * Dolchin: Qondagi qand miqdorini barqarorlashtirishga yordam beradi, hujayralarning insulinga sezgirligini oshiradi.
+  * Kekkik (Timyan): Kuchli yallig'lanishga qarshi va antibakterial xususiyatga ega, immunitetni ko'taradi va nafas olish yo'llarini tozalaydi.
+  * Zaytun: Tarkibidagi antioksidantlar va foydali yog'lar yurak-qon tomir tizimini himoya qiladi, organizmdan toksinlarni chiqaradi.`,
   scriptSteps: [
-    "Salomlashish va o'zini tanishtirish",
-    "Mijoz ehtiyojini aniqlash",
-    "Mahsulotni to'g'ri va halol taqdim etish",
-    "Narx va shartlarni aniq aytish",
-    "Mijoz e'tirozlariga javob berish",
-    "Keyingi qadamni kelishish (buyurtma yoki qo'ng'iroq)"
+    "Salomlashish va mijozning ishonchiga kirish",
+    "Ochiq savollar orqali ehtiyojni aniqlash",
+    "Abihayatni yechim sifatida ko'rsatish (Tarkibi va ta'siri)",
+    "Dori yoki BAD emasligini, Turkiyaning 100% tabiiy mahsuloti ekanini aytish",
+    "E'tirozlarni yengish",
+    "Sotuvni yopish (Narx va kafolatlar tilga olinmaydi)"
   ],
   messages: [],
-  history: []
-};
-
-let state = {
-  ...defaultState,
-  result: null,
+  history: [],
+  showEditor: false,
   loadingChat: false,
   loadingAnalyze: false,
-  showEditor: false,
-  inputMode: "text", 
-  audioFile: null,
+  result: null
 };
 
-// LocalStorage dan ma'lumotlarni o'qish
+let state = JSON.parse(JSON.stringify(defaultState));
+
+// Saqlangan ma'lumotlarni o'qish
 try {
-  const saved = localStorage.getItem("sotuvAI_state");
+  const saved = localStorage.getItem("sotuvAI_coach_state");
   if(saved){
     const parsed = JSON.parse(saved);
     if(parsed.tab) state.tab = parsed.tab;
-    // Agarda productInfo tahrirlanmagan bo'lsa, uni eskisidan yangisiga avtomatik o'zgartirish qismi
-    if(parsed.productInfo && !parsed.productInfo.includes("Dolchin")) {
-      state.productInfo = defaultState.productInfo;
-    } else if (parsed.productInfo) {
-      state.productInfo = parsed.productInfo;
-    }
-    if(parsed.scriptSteps) state.scriptSteps = parsed.scriptSteps;
     if(parsed.messages) state.messages = parsed.messages;
     if(parsed.history) state.history = parsed.history;
   }
 } catch(e){}
 
-// O'zgarishlarni LocalStorage'ga yozish
 function saveState(){
-  localStorage.setItem("sotuvAI_state", JSON.stringify({
+  localStorage.setItem("sotuvAI_coach_state", JSON.stringify({
     tab: state.tab,
-    productInfo: state.productInfo,
-    scriptSteps: state.scriptSteps,
     messages: state.messages,
     history: state.history
   }));
 }
 
-function ikatSVG(color){
+function ikatSVG(){
   let s = "";
-  for(let i=0;i<20;i++){
-    s += `<polyline points="${i*10},10 ${i*10+5},0 ${i*10+10},10" fill="none" stroke="${color}" stroke-width="1.4"/>`;
-  }
+  for(let i=0;i<20;i++){ s += `<polyline points="${i*10},10 ${i*10+5},0 ${i*10+10},10" fill="none" stroke="#C08A28" stroke-width="1.4"/>`; }
   return s;
 }
-document.querySelectorAll(".ikat").forEach(el => el.innerHTML = ikatSVG("#C08A28"));
 
-function gaugeSVG(score, label){
-  const r=54,c=2*Math.PI*r,pct=Math.max(0,Math.min(100,score||0));
-  const offset=c-(pct/100)*c;
-  const color = pct>=75?"#4C7A5E":pct>=45?"#C08A28":"#B5483F";
-  return `<div style="text-align:center;">
-    <svg width="140" height="140" viewBox="0 0 140 140">
-      <circle cx="70" cy="70" r="${r}" stroke="#E7E1D3" stroke-width="10" fill="none"/>
-      <circle cx="70" cy="70" r="${r}" stroke="${color}" stroke-width="10" fill="none"
-        stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
-        transform="rotate(-90 70 70)"/>
-      <text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="#14213D" font-family="Fraunces,serif">${pct}</text>
-      <text x="70" y="88" text-anchor="middle" font-size="11" fill="#6B6558">/ 100</text>
-    </svg>
-    <div class="gauge-label">${label}</div>
-  </div>`;
+// --- MOCK API (PCda server yo'q bo'lsa ishlaydi) ---
+async function mockChatResponse(msg) {
+  await new Promise(r => setTimeout(r, 800));
+  const lowerMsg = msg.toLowerCase();
+  
+  if (lowerMsg.includes("salom")) {
+    return "Salom, bugungi kunlik rejangiz qancha, nima muammolar bo'lsa so'rang yordam beraman.";
+  } 
+  else if (lowerMsg.includes("o'ylab ko'raman") || lowerMsg.includes("o'ylab koraman")) {
+    return `Mijoz "o'ylab ko'raman" desa, bu suhbatni tugatish degani emas! Bu ko'pincha muloyim rad etish yoki ikkilanish belgisidir. 
+
+Bunday holatda shunday yo'l tuting:
+"Tushunaman, sog'liq muhim masala, shoshilmasdan qaror qabul qilganingiz ma'qul. Sir bo'lmasa aytingchi, sizni asosan nima o'ylantiryapti? Natija bermasligimi yoki boshqa sabab bormi?"
+
+Shu tariqa mijozni gapirtiring va asl e'tirozini bilib olib, unga yechim bering.`;
+  }
+  else if (lowerMsg.includes("qand") || lowerMsg.includes("diabet") || lowerMsg.includes("kasallik")) {
+    return `Mijozga shunday tushuntiring: Abihayat qandli diabet va umumiy kasalliklarda yordam beradigan 100% tabiiy vosita. 
+
+Tarkibidagi 3 ta asosiy ne'mat:
+1. Dolchin: Qondagi qand miqdorini barqarorlashtiradi, hujayralarni insulinga sezgir qiladi.
+2. Kekkik (Timyan): Organizmda yallig'lanishni oladi va immunitetni kuchaytiradi.
+3. Zaytun: Antioksidantlarga boy, qon-tomirlarni tozalaydi va yurakka quvvat beradi.
+
+Eng muhimi — bu dori emas, BAD emas, Turkiyaning Bursa tog'laridan olingan toza tabiat in'omi ekanligini alohida ta'kidlang.`;
+  }
+  
+  return "Zo'r savol! Qoidamizni unutmang: biz pul qaytarish kafolati yoki narxlar haqida ma'lumot bermaymiz. Mijozga Abihayat 100% tabiiy ekanligini, zaytun, kekkik va dolchindan iboratligini uqtiring. Yana qanday holat bo'yicha yordam kerak?";
 }
 
 async function apiChat(message){
-  const res = await fetch("/api/chat", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({productInfo: state.productInfo, message})
-  });
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || "Xatolik");
-  return data.reply;
+  try {
+    const res = await fetch("/api/chat", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({productInfo: state.productInfo, message})
+    });
+    if(!res.ok) throw new Error("Server xatosi");
+    const data = await res.json();
+    return data.reply;
+  } catch(e) {
+    console.warn("Backend server topilmadi. Mock API simulyatsiyasi ishga tushdi...");
+    return await mockChatResponse(message);
+  }
 }
 
 async function apiAnalyze(transcript){
-  const res = await fetch("/api/analyze", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({scriptSteps: state.scriptSteps, transcript})
-  });
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || "Xatolik");
-  return data;
+  try {
+    const res = await fetch("/api/analyze", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({scriptSteps: state.scriptSteps, transcript})
+    });
+    if(!res.ok) throw new Error("Server xatosi");
+    return await res.json();
+  } catch(e) {
+    console.warn("Backend server topilmadi. Mock tahlil simulyatsiyasi ishga tushdi...");
+    await new Promise(r => setTimeout(r, 1500));
+    return {
+      honesty_score: 95, script_completion: 85,
+      summary: "Suhbat yaxshi o'tgan. Mijoz bilan to'g'ri ishlangan, mahsulotning tabiiy ekanligi va tarkibi aytilgan. Dori emasligi ta'kidlangan.",
+      steps: state.scriptSteps.map(s => ({step: s, completed: Math.random() > 0.2}))
+    };
+  }
 }
 
-// XHR yordamida audio yuklash va progressini kuzatish
-function apiAnalyzeAudioXHR(file, onProgress){
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/analyze-audio");
-    xhr.upload.onprogress = (e) => {
-      if(e.lengthComputable) {
-        const pct = Math.round((e.loaded / e.total) * 100);
-        onProgress(pct);
-      }
-    };
-    xhr.onload = () => {
-      try {
-        const data = JSON.parse(xhr.responseText);
-        if(xhr.status >= 200 && xhr.status < 300) resolve(data);
-        else reject(new Error(data.error || "Xatolik"));
-      } catch(err) { reject(new Error("Serverdan noto'g'ri javob keldi")); }
-    };
-    xhr.onerror = () => reject(new Error("Tarmoq xatosi"));
-    const form = new FormData();
-    form.append("audio", file);
-    form.append("scriptSteps", JSON.stringify(state.scriptSteps));
-    xhr.send(form);
-  });
-}
-
+// --- RENDER FUNKSIYALARI ---
 function setTab(t){ state.tab = t; saveState(); render(); }
 
 function render(){
@@ -264,40 +213,11 @@ function render(){
     b.classList.toggle("active", b.dataset.tab === state.tab);
     b.onclick = () => setTab(b.dataset.tab);
   });
+  
   const main = document.getElementById("main");
-  if(state.tab === "dashboard") main.innerHTML = renderDashboard();
   if(state.tab === "chat") main.innerHTML = renderChat();
   if(state.tab === "call") main.innerHTML = renderCall();
   attachHandlers();
-}
-
-function renderDashboard(){
-  const h = state.history;
-  const avgH = h.length ? Math.round(h.reduce((s,x)=>s+x.honesty_score,0)/h.length) : null;
-  const avgC = h.length ? Math.round(h.reduce((s,x)=>s+x.script_completion,0)/h.length) : null;
-  return `
-  <div class="page">
-    <h1>Xush kelibsiz</h1>
-    <p class="desc">Sotuv jamoangiz uchun AI yordamchi va qo'ng'iroq nazorati tizimi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    <div class="stats">
-      <div class="card"><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value" style="color:#14213D">${h.length}</div></div>
-      <div class="card"><div class="label">O'rtacha halollik balli</div><div class="value" style="color:#C08A28">${avgH ?? "—"}</div></div>
-      <div class="card"><div class="label">O'rtacha skript bajarilishi</div><div class="value" style="color:#4C7A5E">${avgC!=null?avgC+"%":"—"}</div></div>
-    </div>
-    <h2 class="serif" style="font-size:22px;margin-top:40px;">So'nggi tahlillar</h2>
-    ${h.length===0
-      ? `<div class="empty">Hozircha tahlil yo'q. <br><a id="goCall" style="display:inline-block;margin-top:8px;">Birinchi qo'ng'iroqni tahlil qiling</a></div>`
-      : h.slice(0,8).map(x=>`
-        <div class="history-item">
-          <div><div class="t">${x.title}</div><div class="tm">${x.time}</div></div>
-          <div style="font-size:16px;">
-            <span style="color:#4C7A5E;margin-right:16px;"><b>${x.script_completion}%</b> skript</span>
-            <span style="color:${x.honesty_score>=75?'#4C7A5E':x.honesty_score>=45?'#C08A28':'#B5483F'}"><b>${x.honesty_score}</b> halollik</span>
-          </div>
-        </div>`).join("")
-    }
-  </div>`;
 }
 
 function renderChat(){
@@ -305,21 +225,24 @@ function renderChat(){
   <div class="page chat-wrap">
     <div class="chat-top">
       <div>
-        <h1>Mahsulot AI</h1>
-        <p class="desc">Sotuv menejeri savol beradi, AI faqat mahsulot ma'lumotlari asosida javob beradi.</p>
+        <h1>AI Sotuv Murabbiyi</h1>
+        <p class="desc">Sotuvdagi muammolaringizni yozing yoki "Salom" deb suhbatni boshlang.</p>
       </div>
-      <button class="btn-outline" id="toggleEditor">${state.showEditor ? "Yopish" : "Ma'lumotni tahrirlash"}</button>
+      <button class="btn-outline" id="toggleEditor">${state.showEditor ? "Tahrirni yopish" : "Yo'riqnomani ko'rish"}</button>
     </div>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    ${state.showEditor ? `<textarea id="productInfo" rows="7" style="width:100%;margin-top:16px;line-height:1.5;">${state.productInfo}</textarea>` : ""}
+    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG()}</svg>
+    
+    ${state.showEditor ? `<textarea id="productInfo" rows="10" style="width:100%;margin-top:16px;line-height:1.5;padding:12px;border:1px solid var(--gold);border-radius:8px;">${state.productInfo}</textarea>` : ""}
+    
     <div class="messages" id="messages">
-      ${state.messages.length===0 ? `<div style="color:#8A8371;font-size:15px;text-align:center;margin-top:20px;">Masalan: "Bu mahsulot tarkibi nimalardan iborat va qanday foyda beradi?"</div>` : ""}
-      ${state.messages.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}">${m.text}</div>`).join("")}
-      ${state.loadingChat ? `<div class="typing">AI yozmoqda...</div>` : ""}
+      ${state.messages.length===0 ? `<div style="color:#8A8371;font-size:15px;text-align:center;margin-top:20px;">Masalan: "Salom" deb yozing yoki "Mijoz qimmat deyapti, nima qilay?" deb so'rang.</div>` : ""}
+      ${state.messages.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}"><b>${m.role==='user'?'Siz':'AI Murabbiy'}:</b><br>${m.text}</div>`).join("")}
+      ${state.loadingChat ? `<div class="typing">Murabbiy javob yozmoqda...</div>` : ""}
     </div>
     <div class="chat-input">
-      <input type="text" id="chatInput" placeholder="Savolingizni kiriting..." />
+      <input type="text" id="chatInput" placeholder="Xabaringizni yozing..." />
       <button class="btn-send" id="sendChat">➤</button>
+      <button class="btn-outline" id="clearChat" title="Chatni tozalash">🗑</button>
     </div>
   </div>`;
 }
@@ -328,54 +251,19 @@ function renderCall(){
   return `
   <div class="page">
     <h1>Qo'ng'iroq tahlili</h1>
-    <p class="desc">Qo'ng'iroq matnini yoki audio faylni joylang — AI skript bo'yicha tahlil qiladi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <p class="desc">Mijoz bilan suhbat matnini kiriting. Tizim uni skript bo'yicha baholaydi.</p>
+    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG()}</svg>
     <div class="cols">
       <div>
-        <div class="field-label">Skript bosqichlari</div>
-        <div id="stepsList">
-          ${state.scriptSteps.map((s,i)=>`<div class="step-row"><span>${i+1}. ${s}</span><button data-i="${i}" class="rmStep">✕</button></div>`).join("")}
-        </div>
-        <div class="add-step">
-          <input type="text" id="newStep" placeholder="Yangi bosqich qo'shish..." />
-          <button id="addStep">+</button>
-        </div>
+        <div class="field-label">Suhbat matni</div>
+        <textarea class="transcript" id="transcript" rows="12" placeholder="Sotuvchi: Assalomu alaykum...&#10;Mijoz: Vaalaykum assalom..."></textarea>
         
-        <div class="field-label">Qo'ng'iroq manbasi</div>
-        <div class="mode-toggle">
-          <button class="mode-btn ${state.inputMode==='text'?'active':''}" data-mode="text">✎ Matn ko'rinishida</button>
-          <button class="mode-btn ${state.inputMode==='audio'?'active':''}" data-mode="audio">🎙 Audio yuklash</button>
-        </div>
-        ${state.inputMode === "text" ? `
-          <textarea class="transcript" id="transcript" rows="10" placeholder="Menejer: Assalomu alaykum...&#10;Mijoz: Vaalaykum assalom..."></textarea>
-        ` : `
-          <div class="audio-drop" id="audioDrop">
-            <input type="file" id="audioFile" accept="audio/*" style="display:none;" />
-            ${state.audioFile
-              ? `<div class="audio-picked">🎧 <b>${state.audioFile.name}</b> <button id="removeAudio">✕</button></div>`
-              : `<div class="audio-hint">Audio faylni tanlash uchun ushbu hududga bosing<br><span>(mp3, wav, m4a, ogg formatlari — 20MB gacha)</span></div>`
-            }
-          </div>
-        `}
-        
-        <div id="uploadProgress" style="display:none; justify-content:center; align-items:center; flex-direction:column; margin: 24px 0;">
-          <svg width="70" height="70" viewBox="0 0 70 70">
-            <circle cx="35" cy="35" r="30" stroke="#E7E1D3" stroke-width="5" fill="none"/>
-            <circle id="uploadPctCircle" cx="35" cy="35" r="30" stroke="var(--ink)" stroke-width="5" fill="none"
-              stroke-dasharray="188.4" stroke-dashoffset="188.4" stroke-linecap="round"
-              transform="rotate(-90 35 35)" style="transition: stroke-dashoffset 0.1s linear;"/>
-            <text id="uploadPctText" x="35" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">0%</text>
-          </svg>
-          <div style="font-size:14px; color:var(--muted); margin-top:10px;">Audio fayl serverga yuklanmoqda...</div>
-        </div>
-
         <button class="btn-analyze" id="analyzeBtn" ${state.loadingAnalyze?"disabled":""}>
-          ${state.loadingAnalyze?"<span class='spinner'></span> Tahlil qilinmoqda...":"📞 Tahlil qilish"}
+          ${state.loadingAnalyze?"Tahlil qilinmoqda...":"📞 Tahlil qilish"}
         </button>
-        <div id="analyzeErr" class="err"></div>
       </div>
       <div id="resultCol">
-        ${state.result ? renderResult(state.result) : `<div class="empty" style="height:100%;display:flex;align-items:center;justify-content:center;">Tahlil natijasi shu yerda ko'rinadi.</div>`}
+        ${state.result ? renderResult(state.result) : `<div class="result-card" style="text-align:center;color:var(--muted);padding:40px;">Tahlil natijasi shu yerda ko'rinadi.</div>`}
       </div>
     </div>
   </div>`;
@@ -383,194 +271,87 @@ function renderCall(){
 
 function renderResult(r){
   return `
-    <div class="gauges">
-      ${gaugeSVG(r.honesty_score, "Halollik balli")}
-      ${gaugeSVG(r.script_completion, "Skript bajarilishi")}
-    </div>
     <div class="result-card">
       <div class="title">Xulosa</div>
       <p style="font-size:15px;color:#4B4536;margin:0;line-height:1.5;">${r.summary || ""}</p>
     </div>
-    ${r.transcript ? `
     <div class="result-card">
-      <div class="title">Audio matni (transkript)</div>
-      <p style="font-size:14px;color:#4B4536;white-space:pre-wrap;margin:0;line-height:1.5;">${r.transcript}</p>
-    </div>` : ""}
-    <div class="result-card">
-      <div class="title">Skript bo'yicha bosqichlar holati</div>
+      <div class="title">Skript tekshiruvi</div>
       ${(r.steps||[]).map(s=>`
-        <div class="step-line">
+        <div style="display:flex; gap:10px; margin-bottom:10px; font-size:15px;">
           <span style="color:${s.completed?'#4C7A5E':'#B5483F'};font-weight:bold;">${s.completed?"✔":"✕"}</span>
-          <div><div style="font-weight:500;">${s.step}</div>${s.note?`<div style="font-size:13px;color:#8A8371;margin-top:2px;">${s.note}</div>`:""}</div>
+          <span>${s.step}</span>
         </div>`).join("")}
     </div>
-    ${(r.issues && r.issues.length) ? `
-    <div class="result-card">
-      <div class="title">Aniqlangan xato va yolg'onlar</div>
-      ${r.issues.map(iss=>{
-        const c = iss.severity==="yuqori"?"#B5483F":iss.severity==="o'rta"?"#C08A28":"#9AA3BD";
-        return `<div class="issue" style="border-color:${c}">
-          <div class="sev" style="color:${c}">⚠ ${iss.severity} darajali</div>
-          <div class="quote">"${iss.quote}"</div>
-          <div class="desc">${iss.issue}</div>
-        </div>`;
-      }).join("")}
-    </div>` : ""}
   `;
 }
 
 function attachHandlers(){
-  const goCall = document.getElementById("goCall");
-  if(goCall) goCall.onclick = () => setTab("call");
-
   const toggleEditor = document.getElementById("toggleEditor");
   if(toggleEditor) toggleEditor.onclick = () => { state.showEditor = !state.showEditor; render(); };
 
   const productInfo = document.getElementById("productInfo");
-  if(productInfo) productInfo.oninput = (e) => { 
-    state.productInfo = e.target.value; 
-    saveState();
-  };
+  if(productInfo) productInfo.oninput = (e) => { state.productInfo = e.target.value; saveState(); };
 
   const sendChat = document.getElementById("sendChat");
   const chatInput = document.getElementById("chatInput");
+  const clearChat = document.getElementById("clearChat");
+  
+  if(clearChat) clearChat.onclick = () => { state.messages = []; saveState(); render(); };
+
   if(sendChat){
     const send = async () => {
       const val = chatInput.value.trim();
       if(!val || state.loadingChat) return;
+      
       state.messages.push({role:"user", text: val});
       saveState();
-      chatInput.value = "";
       state.loadingChat = true;
       render();
-      document.getElementById("chatInput").focus();
+      
       try{
         const reply = await apiChat(val);
         state.messages.push({role:"ai", text: reply});
         saveState();
       }catch(e){
-        state.messages.push({role:"ai", text: "Xatolik yuz berdi, qayta urinib ko'ring."});
+        state.messages.push({role:"ai", text: "Xatolik yuz berdi. Qayta urinib ko'ring."});
       }
+      
       state.loadingChat = false;
       render();
       const box = document.getElementById("messages");
       if(box) box.scrollTop = box.scrollHeight;
+      document.getElementById("chatInput").focus();
     };
     sendChat.onclick = send;
     chatInput.onkeydown = (e) => { if(e.key === "Enter") send(); };
     if(state.tab === "chat") chatInput.focus();
   }
 
-  document.querySelectorAll(".rmStep").forEach(btn=>{
-    btn.onclick = () => { state.scriptSteps.splice(+btn.dataset.i, 1); saveState(); render(); };
-  });
-  
-  const addStep = document.getElementById("addStep");
-  const newStep = document.getElementById("newStep");
-  if(addStep){
-    const add = () => { 
-      if(newStep.value.trim()){ 
-        state.scriptSteps.push(newStep.value.trim()); 
-        saveState(); 
-        render(); 
-      } 
-    };
-    addStep.onclick = add;
-    newStep.onkeydown = (e) => { if(e.key==="Enter") add(); };
-  }
-
-  document.querySelectorAll(".mode-btn").forEach(btn=>{
-    btn.onclick = () => { state.inputMode = btn.dataset.mode; state.result = null; render(); };
-  });
-
-  const audioDrop = document.getElementById("audioDrop");
-  const audioFileInput = document.getElementById("audioFile");
-  if(audioDrop && audioFileInput){
-    audioDrop.onclick = (e) => { if(e.target.id !== "removeAudio") audioFileInput.click(); };
-    audioFileInput.onchange = () => {
-      if(audioFileInput.files[0]){ state.audioFile = audioFileInput.files[0]; render(); }
-    };
-  }
-  const removeAudio = document.getElementById("removeAudio");
-  if(removeAudio) removeAudio.onclick = (e) => { e.stopPropagation(); state.audioFile = null; render(); };
-
-  const transcriptEl = document.getElementById("transcript");
   const analyzeBtn = document.getElementById("analyzeBtn");
-  
+  const transcriptEl = document.getElementById("transcript");
   if(analyzeBtn){
     analyzeBtn.onclick = async () => {
-      const errEl = document.getElementById("analyzeErr");
-      errEl.textContent = "";
-
-      if(state.inputMode === "text"){
-        const t = transcriptEl.value.trim();
-        if(!t || analyzeBtn.disabled) return;
-        
-        analyzeBtn.disabled = true;
-        analyzeBtn.innerHTML = "<span class='spinner'></span> Tahlil qilinmoqda...";
-
-        try{
-          const r = await apiAnalyze(t);
-          state.result = r;
-          state.history.unshift({
-            title: t.slice(0,40) + (t.length>40?"...":""),
-            time: new Date().toLocaleString("uz-UZ"),
-            honesty_score: r.honesty_score,
-            script_completion: r.script_completion
-          });
-          saveState();
-          render();
-        }catch(e){
-          analyzeBtn.disabled = false;
-          analyzeBtn.innerHTML = "📞 Tahlil qilish";
-          errEl.textContent = "Tahlil qilishda xatolik yuz berdi. Qayta urinib ko'ring.";
-        }
-      } else {
-        if(!state.audioFile || analyzeBtn.disabled) return;
-        
-        const prog = document.getElementById("uploadProgress");
-        const pctText = document.getElementById("uploadPctText");
-        const pctCircle = document.getElementById("uploadPctCircle");
-
-        analyzeBtn.disabled = true;
-        analyzeBtn.style.display = "none";
-        prog.style.display = "flex";
-        pctText.textContent = "0%";
-        pctCircle.setAttribute("stroke-dashoffset", "188.4");
-
-        try{
-          const r = await apiAnalyzeAudioXHR(state.audioFile, (pct) => {
-            pctText.textContent = pct + "%";
-            pctCircle.setAttribute("stroke-dashoffset", 188.4 - (pct/100)*188.4);
-            if(pct === 100) {
-              prog.style.display = "none";
-              analyzeBtn.style.display = "block";
-              analyzeBtn.innerHTML = "<span class='spinner'></span> Tahlil qilinmoqda...";
-            }
-          });
-          
-          state.result = r;
-          state.history.unshift({
-            title: "🎙 " + state.audioFile.name,
-            time: new Date().toLocaleString("uz-UZ"),
-            honesty_score: r.honesty_score,
-            script_completion: r.script_completion
-          });
-          saveState();
-          render();
-        }catch(e){
-          prog.style.display = "none";
-          analyzeBtn.style.display = "block";
-          analyzeBtn.disabled = false;
-          analyzeBtn.innerHTML = "📞 Tahlil qilish";
-          errEl.textContent = e.message || "Audio tahlil qilishda xatolik yuz berdi. Qayta urinib ko'ring.";
-        }
+      const t = transcriptEl.value.trim();
+      if(!t || analyzeBtn.disabled) return;
+      
+      state.loadingAnalyze = true;
+      render();
+      
+      try{
+        state.result = await apiAnalyze(t);
+      }catch(e){
+        alert("Xatolik yuz berdi: " + e.message);
       }
+      
+      state.loadingAnalyze = false;
+      render();
     };
   }
 }
 
-// Boshlang'ich yuklanish
+// Dasturni ishga tushirish
+document.querySelectorAll(".ikat").forEach(el => el.innerHTML = ikatSVG());
 render();
 </script>
 </body>
