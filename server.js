@@ -1,7 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GoogleAIFileManager } from '@google/generative-ai/server';
+import { GoogleGenerativeAI, GoogleAIFileManager } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -107,9 +106,9 @@ Siz professional sifat nazorati bo'yicha mutaxassiz. Qo'ng'iroq audio yozuvini c
 
 **MAHSULOT MA'LUMOTLARI:**
 - Nomi: Abihayat
-- Tarkibi: Toza asal, qizil ginseng, ashwagandha, baxmal
-- Narxi: 600,000 so'm (bitta shisha uchun)
-- AKSIYA: 2+2 bonus taklif — 2 ta sotib oling, 2 ta bepul oling (jami 4 ta shisha)
+- Tarkibi: zaytun, kekkik, dolchin
+- Narxi: 600,000 so'm (bitta quti uchun)
+- AKSIYA: 2+2 bonus taklif — 2 ta sotib oling, 2 ta bepul oling (jami 4 ta quti) maxsulot soni 1 taga kamaysa narx ham 200,000 soʻmga tushadi
 
 **TEKSHIRISH MEZONLARI:**
 ${checklistString}
