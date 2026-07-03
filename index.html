@@ -18,7 +18,6 @@
   h1,h2,.serif{font-family:'Fraunces',serif;}
   .app{display:flex;height:100vh;}
   
-  /* Sidebar */
   .sidebar{width:240px;flex-shrink:0;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,0.1);}
   .sidebar .brand{padding:26px 22px 14px;}
   .sidebar .brand .name{font-size:20px;font-weight:600;color:var(--paper);}
@@ -36,7 +35,6 @@
   .page .desc{color:var(--muted);margin-top:6px;}
   .divider{width:150px;margin-top:14px;}
 
-  /* Cards */
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:32px;}
   .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow);transition:transform 0.2s, box-shadow 0.2s;}
   .card:hover{transform:translateY(-4px);box-shadow:0 15px 35px -10px rgba(20,33,61,0.15);}
@@ -51,7 +49,6 @@
   .history-item .t{font-weight:600;color:var(--ink);}
   .history-item .tm{font-size:12px;color:#8A8371;}
 
-  /* Chat */
   .chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 60px);}
   .chat-top{display:flex;justify-content:space-between;align-items:flex-start;}
   .btn-outline{font-size:13px;padding:7px 14px;border:1px solid #D8D1BE;border-radius:6px;background:#fff;cursor:pointer;color:var(--ink);}
@@ -67,7 +64,6 @@
   .btn-send{background:var(--ink);color:#fff;border:none;border-radius:6px;padding:0 18px;cursor:pointer;}
   .btn-send:hover{background:var(--ink-light);}
 
-  /* Call Analysis */
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:20px;}
   .step-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:14px;margin-bottom:6px;}
   .step-row button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;}
@@ -86,7 +82,6 @@
   .mode-btn{flex:1;padding:8px;border:1px solid #D8D1BE;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit;}
   .mode-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
 
-  /* Audio Drop + Progress */
   .audio-drop{border:2px dashed #D8D1BE;border-radius:12px;padding:32px;text-align:center;cursor:pointer;background:#fff;transition:all 0.2s;}
   .audio-drop:hover{border-color:var(--gold);background:#F8F4E9;}
   .audio-hint{color:#8A8371;font-size:13px;}
@@ -94,24 +89,10 @@
   .audio-picked{font-size:14px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:10px;}
   .audio-picked button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;}
 
-  .upload-progress {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    margin: 20px auto;
-  }
-  .upload-progress svg { transform: rotate(-90deg); }
-  .upload-progress circle { transition: stroke-dashoffset 0.1s linear; }
-  .upload-progress .progress-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    font-weight: 600;
-    color: var(--ink);
-    font-size: 18px;
-  }
+  .upload-progress {position: relative;width: 120px;height: 120px;margin: 20px auto;}
+  .upload-progress svg {transform: rotate(-90deg);}
+  .upload-progress circle {transition: stroke-dashoffset 0.1s linear;}
+  .upload-progress .progress-text {position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;font-weight: 600;color: var(--ink);font-size: 18px;}
 
   .gauges{display:flex;justify-content:space-around;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px 0;}
   .gauge-label{font-size:13px;font-weight:600;color:var(--ink);text-align:center;margin-top:4px;}
@@ -145,20 +126,8 @@
 <script>
 const state = {
   tab: "dashboard",
-  productInfo: `Mahsulot nomi: Abihayat
-Turi: Tabiiy o'simlik asosidagi quvvat va salomatlik mahsuloti
-Narxi: 285 000 so'm / quti (30 kunlik)
-Asosiy foyda: energiya oshiradi, immunitetni mustahkamlaydi
-Tarkib: 100% tabiiy o'simlik ekstraktlari
-Eslatma: dori vositasi emas, biologik faol qo'shimcha sifatida tavsiya etiladi`,
-  scriptSteps: [
-    "Salomlashish va o'zini tanishtirish",
-    "Mijoz ehtiyojini aniqlash",
-    "Mahsulotni to'g'ri va halol taqdim etish",
-    "Narx va shartlarni aniq aytish",
-    "Mijoz e'tirozlariga javob berish",
-    "Keyingi qadamni kelishish (buyurtma yoki qo'ng'iroq)"
-  ],
+  productInfo: `Mahsulot nomi: Abihayat\nTuri: Tabiiy o'simlik asosidagi quvvat va salomatlik mahsuloti\nNarxi: 285 000 so'm / quti (30 kunlik)\nAsosiy foyda: energiya oshiradi, immunitetni mustahkamlaydi\nTarkib: 100% tabiiy o'simlik ekstraktlari\nEslatma: dori vositasi emas, biologik faol qo'shimcha sifatida tavsiya etiladi`,
+  scriptSteps: ["Salomlashish va o'zini tanishtirish","Mijoz ehtiyojini aniqlash","Mahsulotni to'g'ri va halol taqdim etish","Narx va shartlarni aniq aytish","Mijoz e'tirozlariga javob berish","Keyingi qadamni kelishish (buyurtma yoki qo'ng'iroq)"],
   messages: [],
   history: [],
   result: null,
@@ -173,23 +142,19 @@ Eslatma: dori vositasi emas, biologik faol qo'shimcha sifatida tavsiya etiladi`,
 
 function ikatSVG(color){
   let s = "";
-  for(let i=0;i<20;i++){
-    s += `<polyline points="${i*10},10 ${i*10+5},0 \( {i*10+10},10" fill="none" stroke=" \){color}" stroke-width="1.4"/>`;
-  }
+  for(let i=0;i<20;i++) s += `<polyline points="${i*10},10 ${i*10+5},0 \( {i*10+10},10" fill="none" stroke=" \){color}" stroke-width="1.4"/>`;
   return s;
 }
 document.querySelectorAll(".ikat").forEach(el => el.innerHTML = ikatSVG("#C08A28"));
 
 function gaugeSVG(score, label){
-  const r=54,c=2*Math.PI*r,pct=Math.max(0,Math.min(100,score||0));
-  const offset=c-(pct/100)*c;
+  const r=54, c=2*Math.PI*r, pct=Math.max(0,Math.min(100,score||0));
+  const offset = c - (pct/100)*c;
   const color = pct>=75?"#4C7A5E":pct>=45?"#C08A28":"#B5483F";
   return `<div style="text-align:center;">
     <svg width="130" height="130" viewBox="0 0 140 140">
       <circle cx="70" cy="70" r="${r}" stroke="#E7E1D3" stroke-width="10" fill="none"/>
-      <circle cx="70" cy="70" r="\( {r}" stroke=" \){color}" stroke-width="10" fill="none"
-        stroke-dasharray="\( {c}" stroke-dashoffset=" \){offset}" stroke-linecap="round"
-        transform="rotate(-90 70 70)"/>
+      <circle cx="70" cy="70" r="\( {r}" stroke=" \){color}" stroke-width="10" fill="none" stroke-dasharray="\( {c}" stroke-dashoffset=" \){offset}" stroke-linecap="round" transform="rotate(-90 70 70)"/>
       <text x="70" y="66" text-anchor="middle" font-size="26" font-weight="700" fill="#14213D" font-family="Fraunces,serif">${pct}</text>
       <text x="70" y="86" text-anchor="middle" font-size="10" fill="#6B6558">/ 100</text>
     </svg>
@@ -197,21 +162,15 @@ function gaugeSVG(score, label){
   </div>`;
 }
 
-async function apiChat(message){
-  const res = await fetch("/api/chat", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({productInfo: state.productInfo, message})
-  });
+async function apiChat(message){ /* ... */ 
+  const res = await fetch("/api/chat", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({productInfo: state.productInfo, message})});
   const data = await res.json();
   if(!res.ok) throw new Error(data.error || "Xatolik");
   return data.reply;
 }
 
 async function apiAnalyze(transcript){
-  const res = await fetch("/api/analyze", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({scriptSteps: state.scriptSteps, transcript})
-  });
+  const res = await fetch("/api/analyze", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({scriptSteps: state.scriptSteps, transcript})});
   const data = await res.json();
   if(!res.ok) throw new Error(data.error || "Xatolik");
   return data;
@@ -222,43 +181,25 @@ async function apiAnalyzeAudio(file){
     const form = new FormData();
     form.append("audio", file);
     form.append("scriptSteps", JSON.stringify(state.scriptSteps));
-
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/analyze-audio");
-
     xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
+      if(e.lengthComputable){
         const percent = Math.round((e.loaded / e.total) * 100);
         state.uploadProgress = percent;
-        const progressCircle = document.getElementById("progressCircle");
-        const progressText = document.getElementById("progressText");
-        if (progressCircle && progressText) {
-          const circumference = 326.73;
-          const offset = circumference - (percent / 100) * circumference;
-          progressCircle.style.strokeDashoffset = offset;
-          progressText.textContent = percent + "%";
+        const circle = document.getElementById("progressCircle");
+        const text = document.getElementById("progressText");
+        if(circle && text){
+          const circ = 326.73;
+          circle.style.strokeDashoffset = circ - (percent/100)*circ;
+          text.textContent = percent + "%";
         }
       }
     };
-
     xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          resolve(data);
-        } catch (e) {
-          reject(new Error("JSON parse xatosi"));
-        }
-      } else {
-        try {
-          const err = JSON.parse(xhr.responseText);
-          reject(new Error(err.error || "Server xatosi"));
-        } catch {
-          reject(new Error("Xatolik yuz berdi"));
-        }
-      }
+      if(xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText));
+      else reject(new Error("Xatolik"));
     };
-
     xhr.onerror = () => reject(new Error("Network xatosi"));
     xhr.send(form);
   });
@@ -267,7 +208,7 @@ async function apiAnalyzeAudio(file){
 function setTab(t){ state.tab = t; render(); }
 
 function render(){
-  document.querySelectorAll(".nav button").forEach(b=>{
+  document.querySelectorAll(".nav button").forEach(b => {
     b.classList.toggle("active", b.dataset.tab === state.tab);
     b.onclick = () => setTab(b.dataset.tab);
   });
@@ -278,264 +219,150 @@ function render(){
   attachHandlers();
 }
 
-// ... (renderDashboard, renderChat, renderCall, renderResult funksiyalari o'zgarmagan, lekin ular ham yangi dizayn bilan ishlaydi)
-
 function renderDashboard(){
   const h = state.history;
   const avgH = h.length ? Math.round(h.reduce((s,x)=>s+x.honesty_score,0)/h.length) : null;
   const avgC = h.length ? Math.round(h.reduce((s,x)=>s+x.script_completion,0)/h.length) : null;
-  return `
-  <div class="page">
+  return `<div class="page">
     <h1>Xush kelibsiz</h1>
     <p class="desc">Sotuv jamoangiz uchun AI yordamchi va qo'ng'iroq nazorati.</p>
     <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
     <div class="stats">
-      <div class="card"><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value" style="color:#14213D">${h.length}</div></div>
+      <div class="card"><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value">${h.length}</div></div>
       <div class="card"><div class="label">O'rtacha halollik balli</div><div class="value" style="color:#C08A28">${avgH ?? "—"}</div></div>
       <div class="card"><div class="label">O'rtacha skript bajarilishi</div><div class="value" style="color:#4C7A5E">${avgC!=null?avgC+"%":"—"}</div></div>
     </div>
     <h2 class="serif" style="font-size:18px;margin-top:36px;">So'nggi tahlillar</h2>
-    ${h.length===0
-      ? `<div class="empty">Hozircha tahlil yo'q. <a id="goCall">Birinchi qo'ng'iroqni tahlil qiling</a></div>`
-      : h.slice(0,6).map(x=>`
-        <div class="history-item">
-          <div><div class="t">\( {x.title}</div><div class="tm"> \){x.time}</div></div>
-          <div>
-            <span style="color:#4C7A5E;margin-right:14px;">${x.script_completion}% skript</span>
-            <span style="color:\( {x.honesty_score>=75?'#4C7A5E':x.honesty_score>=45?'#C08A28':'#B5483F'}"> \){x.honesty_score} halollik</span>
-          </div>
-        </div>`).join("")
-    }
+    \( {h.length===0 ? `<div class="empty">Hozircha tahlil yo'q. <a id="goCall">Birinchi qo'ng'iroqni tahlil qiling</a></div>` : h.slice(0,6).map(x=>`<div class="history-item"><div><div class="t"> \){x.title}</div><div class="tm">\( {x.time}</div></div><div><span style="color:#4C7A5E;margin-right:14px;"> \){x.script_completion}% skript</span><span style="color:\( {x.honesty_score>=75?'#4C7A5E':x.honesty_score>=45?'#C08A28':'#B5483F'}"> \){x.honesty_score} halollik</span></div></div>`).join("")}
   </div>`;
 }
 
 function renderChat(){
-  return `
-  <div class="page chat-wrap">
+  return `<div class="page chat-wrap">
     <div class="chat-top">
-      <div>
-        <h1>Mahsulot AI</h1>
-        <p class="desc">Sotuv menejeri savol beradi, AI mahsulot ma'lumoti asosida javob beradi.</p>
-      </div>
-      <button class="btn-outline" id="toggleEditor">${state.showEditor ? "Yopish" : "Mahsulot ma'lumotini tahrirlash"}</button>
+      <div><h1>Mahsulot AI</h1><p class="desc">Sotuv menejeri savol beradi, AI javob beradi.</p></div>
+      <button class="btn-outline" id="toggleEditor">${state.showEditor ? "Yopish" : "Tahrirlash"}</button>
     </div>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <svg class="ikat divider" viewBox="0 0 200 10">${ikatSVG("#C08A28")}</svg>
     \( {state.showEditor ? `<textarea id="productInfo" rows="6" style="width:100%;margin-top:12px;"> \){state.productInfo}</textarea>` : ""}
-    <div class="messages" id="messages">
-      ${state.messages.length===0 ? `<div style="color:#8A8371;font-size:14px;">Masalan: "Bu mahsulotning narxi qancha va nima uchun boshqalardan farq qiladi?"</div>` : ""}
-      ${state.messages.map(m=>`<div class="msg \( {m.role==='user'?'user':'ai'}"> \){m.text}</div>`).join("")}
-      ${state.loadingChat ? `<div class="typing">yozmoqda...</div>` : ""}
-    </div>
-    <div class="chat-input">
-      <input type="text" id="chatInput" placeholder="Savolingizni yozing..." />
-      <button class="btn-send" id="sendChat">➤</button>
-    </div>
+    <div class="messages" id="messages">${state.messages.map(m=>`<div class="msg \( {m.role}"> \){m.text}</div>`).join("") || `<div style="color:#8A8371;">Savol bering...</div>`}</div>
+    <div class="chat-input"><input type="text" id="chatInput" placeholder="Savolingiz..." /><button class="btn-send" id="sendChat">➤</button></div>
   </div>`;
 }
 
 function renderCall(){
-  return `
-  <div class="page">
+  return `<div class="page">
     <h1>Qo'ng'iroq tahlili</h1>
-    <p class="desc">Qo'ng'iroq matnini joylang — AI skript bo'yicha solishtirib, xato va yolg'on joylarni topadi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <p class="desc">Qo'ng'iroqni tahlil qiling</p>
+    <svg class="ikat divider" viewBox="0 0 200 10">${ikatSVG("#C08A28")}</svg>
     <div class="cols">
       <div>
         <div class="field-label">Skript bosqichlari</div>
-        <div id="stepsList">
-          \( {state.scriptSteps.map((s,i)=>`<div class="step-row"><span> \){i+1}. \( {s}</span><button data-i=" \){i}" class="rmStep">✕</button></div>`).join("")}
-        </div>
-        <div class="add-step">
-          <input type="text" id="newStep" placeholder="Yangi bosqich qo'shish..." />
-          <button id="addStep">+</button>
-        </div>
+        <div id="stepsList">\( {state.scriptSteps.map((s,i)=>`<div class="step-row"><span> \){i+1}. \( {s}</span><button data-i=" \){i}" class="rmStep">✕</button></div>`).join("")}</div>
+        <div class="add-step"><input type="text" id="newStep" placeholder="Yangi bosqich..." /><button id="addStep">+</button></div>
         <div class="field-label">Qo'ng'iroq manbasi</div>
         <div class="mode-toggle">
-          <button class="mode-btn ${state.inputMode==='text'?'active':''}" data-mode="text">✎ Matn</button>
-          <button class="mode-btn ${state.inputMode==='audio'?'active':''}" data-mode="audio">🎙 Audio fayl</button>
+          <button class="mode-btn ${state.inputMode==='text'?'active':''}" data-mode="text">Matn</button>
+          <button class="mode-btn ${state.inputMode==='audio'?'active':''}" data-mode="audio">Audio</button>
         </div>
-        ${state.inputMode === "text" ? `
-          <textarea class="transcript" id="transcript" rows="9" placeholder="Menejer: Assalomu alaykum...&#10;Mijoz: ..."></textarea>
-        ` : `
+        ${state.inputMode === "text" ? `<textarea class="transcript" id="transcript" rows="9" placeholder="Transkriptni yozing..."></textarea>` : `
           <div class="audio-drop" id="audioDrop">
-            <input type="file" id="audioFile" accept="audio/*" style="display:none;" />
-            ${state.audioFile
-              ? `<div class="audio-picked">🎧 ${state.audioFile.name} <button id="removeAudio">✕</button></div>`
-              : `<div class="audio-hint">Audio faylni tanlash uchun bosing<br><span>mp3, wav, m4a, ogg — 20MB gacha</span></div>`
-            }
-            ${state.uploading ? `
-              <div class="upload-progress" id="uploadProgress">
-                <svg width="120" height="120" viewBox="0 0 120 120">
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="#E7E1D3" stroke-width="12"/>
-                  <circle id="progressCircle" cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="12" stroke-dasharray="326.73" stroke-dashoffset="326.73" stroke-linecap="round"/>
-                </svg>
-                <div class="progress-text" id="progressText">0%</div>
-              </div>
-            ` : ''}
-          </div>
-        `}
-        <button class="btn-analyze" id="analyzeBtn" \( {state.loadingAnalyze?"disabled":""}> \){state.loadingAnalyze?"Tahlil qilinmoqda...":"📞 Tahlil qilish"}</button>
+            <input type="file" id="audioFile" accept="audio/*" style="display:none;"/>
+            ${state.audioFile ? `<div class="audio-picked">🎧 ${state.audioFile.name} <button id="removeAudio">✕</button></div>` : `<div class="audio-hint">Audio faylni tanlang<br><span>20MB gacha</span></div>`}
+            ${state.uploading ? `<div class="upload-progress"><svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="#E7E1D3" stroke-width="12"/><circle id="progressCircle" cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="12" stroke-dasharray="326.73" stroke-dashoffset="326.73" stroke-linecap="round"/></svg><div class="progress-text" id="progressText">0%</div></div>` : ''}
+          </div>`}
+        <button class="btn-analyze" id="analyzeBtn">${state.loadingAnalyze ? "Tahlil qilinmoqda..." : "📞 Tahlil qilish"}</button>
         <div id="analyzeErr" class="err"></div>
       </div>
-      <div id="resultCol">
-        ${state.result ? renderResult(state.result) : `<div class="empty" style="height:100%;display:flex;align-items:center;justify-content:center;">Natija shu yerda ko'rinadi.</div>`}
-      </div>
+      <div id="resultCol">${state.result ? renderResult(state.result) : `<div class="empty" style="height:100%;display:flex;align-items:center;justify-content:center;">Natija shu yerda ko'rinadi</div>`}</div>
     </div>
   </div>`;
 }
 
 function renderResult(r){
-  return `
-    <div class="gauges">
-      ${gaugeSVG(r.honesty_score, "Halollik balli")}
-      ${gaugeSVG(r.script_completion, "Skript bajarilishi")}
-    </div>
-    <div class="result-card">
-      <div class="title">Xulosa</div>
-      <p style="font-size:14px;color:#4B4536;margin:0;">${r.summary || ""}</p>
-    </div>
-    ${r.transcript ? `
-    <div class="result-card">
-      <div class="title">Audio matni (transkript)</div>
-      <p style="font-size:13px;color:#4B4536;white-space:pre-wrap;margin:0;">${r.transcript}</p>
-    </div>` : ""}
-    <div class="result-card">
-      <div class="title">Skript bo'yicha bosqichlar</div>
-      ${(r.steps||[]).map(s=>`
-        <div class="step-line">
-          <span style="color:\( {s.completed?'#4C7A5E':'#B5483F'}"> \){s.completed?"✔":"✕"}</span>
-          <div><div>\( {s.step}</div> \){s.note?`<div style="font-size:12px;color:#8A8371;">${s.note}</div>`:""}</div>
-        </div>`).join("")}
-    </div>
-    ${(r.issues && r.issues.length) ? `
-    <div class="result-card">
-      <div class="title">Aniqlangan xato / yolg'on joylar</div>
-      ${r.issues.map(iss=>{
-        const c = iss.severity==="yuqori"?"#B5483F":iss.severity==="o'rta"?"#C08A28":"#9AA3BD";
-        return `<div class="issue" style="border-color:${c}">
-          <div class="sev" style="color:${c}">⚠ ${iss.severity} darajali</div>
-          <div class="quote">"${iss.quote}"</div>
-          <div class="desc">${iss.issue}</div>
-        </div>`;
-      }).join("")}
-    </div>` : ""}
-  `;
+  return `<div class="gauges">\( {gaugeSVG(r.honesty_score, "Halollik balli")} \){gaugeSVG(r.script_completion, "Skript bajarilishi")}</div>
+    <div class="result-card"><div class="title">Xulosa</div><p>${r.summary||""}</p></div>
+    \( {r.transcript?`<div class="result-card"><div class="title">Transkript</div><p style="white-space:pre-wrap;"> \){r.transcript}</p></div>`:""}
+    <div class="result-card"><div class="title">Bosqichlar</div>\( {(r.steps||[]).map(s=>`<div class="step-line"><span style="color: \){s.completed?'#4C7A5E':'#B5483F'}">\( {s.completed?"✔":"✕"}</span><div> \){s.step}</div></div>`).join("")}</div>`;
 }
 
 function attachHandlers(){
-  // ... (oldingi kod bilan bir xil, faqat audio qismi yangilangan)
-  const goCall = document.getElementById("goCall");
-  if(goCall) goCall.onclick = () => setTab("call");
-
+  const goCall = document.getElementById("goCall"); if(goCall) goCall.onclick = () => setTab("call");
   const toggleEditor = document.getElementById("toggleEditor");
   if(toggleEditor) toggleEditor.onclick = () => { state.showEditor = !state.showEditor; render(); };
 
   const productInfo = document.getElementById("productInfo");
-  if(productInfo) productInfo.oninput = (e) => { state.productInfo = e.target.value; };
+  if(productInfo) productInfo.oninput = e => state.productInfo = e.target.value;
 
-  // Chat handler (o'zgarmagan)
+  // Chat
   const sendChat = document.getElementById("sendChat");
   const chatInput = document.getElementById("chatInput");
-  if(sendChat){
+  if(sendChat && chatInput){
     const send = async () => {
       const val = chatInput.value.trim();
       if(!val || state.loadingChat) return;
-      state.messages.push({role:"user", text: val});
+      state.messages.push({role:"user", text:val});
       chatInput.value = "";
-      state.loadingChat = true;
-      render();
+      state.loadingChat = true; render();
       try{
         const reply = await apiChat(val);
-        state.messages.push({role:"ai", text: reply});
-      }catch(e){
-        state.messages.push({role:"ai", text: "Xatolik yuz berdi, qayta urinib ko'ring."});
-      }
-      state.loadingChat = false;
-      render();
-      const box = document.getElementById("messages");
-      if(box) box.scrollTop = box.scrollHeight;
+        state.messages.push({role:"ai", text:reply});
+      }catch(e){ state.messages.push({role:"ai", text:"Xatolik yuz berdi."}); }
+      state.loadingChat = false; render();
     };
     sendChat.onclick = send;
-    chatInput.onkeydown = (e) => { if(e.key === "Enter") send(); };
+    chatInput.onkeydown = e => { if(e.key==="Enter") send(); };
   }
 
-  // Steps handlers
-  document.querySelectorAll(".rmStep").forEach(btn=>{
-    btn.onclick = () => { state.scriptSteps.splice(+btn.dataset.i, 1); render(); };
-  });
-  const addStep = document.getElementById("addStep");
-  const newStep = document.getElementById("newStep");
-  if(addStep){
-    const add = () => { if(newStep.value.trim()){ state.scriptSteps.push(newStep.value.trim()); render(); } };
-    addStep.onclick = add;
-    newStep.onkeydown = (e) => { if(e.key==="Enter") add(); };
+  // Steps
+  document.querySelectorAll(".rmStep").forEach(btn => btn.onclick = () => { state.scriptSteps.splice(+btn.dataset.i,1); render(); });
+  const addStepBtn = document.getElementById("addStep");
+  const newStepInput = document.getElementById("newStep");
+  if(addStepBtn && newStepInput){
+    const add = () => { if(newStepInput.value.trim()){ state.scriptSteps.push(newStepInput.value.trim()); render(); } };
+    addStepBtn.onclick = add;
+    newStepInput.onkeydown = e => { if(e.key==="Enter") add(); };
   }
 
-  // Mode toggle
-  document.querySelectorAll(".mode-btn").forEach(btn=>{
-    btn.onclick = () => { state.inputMode = btn.dataset.mode; state.result = null; render(); };
-  });
+  // Mode
+  document.querySelectorAll(".mode-btn").forEach(btn => btn.onclick = () => { state.inputMode = btn.dataset.mode; state.result = null; render(); });
 
-  // Audio handlers
+  // Audio
   const audioDrop = document.getElementById("audioDrop");
-  const audioFileInput = document.getElementById("audioFile");
-  if(audioDrop && audioFileInput){
-    audioDrop.onclick = (e) => { if(e.target.id !== "removeAudio") audioFileInput.click(); };
-    audioFileInput.onchange = () => {
-      if(audioFileInput.files[0]){ state.audioFile = audioFileInput.files[0]; render(); }
-    };
+  if(audioDrop){
+    audioDrop.onclick = e => { if(e.target.id !== "removeAudio") document.getElementById("audioFile").click(); };
   }
-  const removeAudio = document.getElementById("removeAudio");
-  if(removeAudio) removeAudio.onclick = (e) => { e.stopPropagation(); state.audioFile = null; render(); };
+  const audioFileInput = document.getElementById("audioFile");
+  if(audioFileInput) audioFileInput.onchange = () => { if(audioFileInput.files[0]){ state.audioFile = audioFileInput.files[0]; render(); }};
 
-  // Analyze button
+  const removeAudio = document.getElementById("removeAudio");
+  if(removeAudio) removeAudio.onclick = e => { e.stopPropagation(); state.audioFile = null; render(); };
+
+  // Analyze
   const analyzeBtn = document.getElementById("analyzeBtn");
   if(analyzeBtn){
     analyzeBtn.onclick = async () => {
       const errEl = document.getElementById("analyzeErr");
       errEl.textContent = "";
-
       if(state.inputMode === "text"){
         const t = document.getElementById("transcript").value.trim();
-        if(!t || state.loadingAnalyze) return;
+        if(!t) return;
         state.loadingAnalyze = true; state.result = null; render();
         try{
           const r = await apiAnalyze(t);
           state.result = r;
-          state.history.unshift({
-            title: t.slice(0,40) + (t.length>40?"...":""),
-            time: new Date().toLocaleString("uz-UZ"),
-            honesty_score: r.honesty_score,
-            script_completion: r.script_completion
-          });
-        }catch(e){
-          errEl.textContent = "Tahlil qilishda xatolik yuz berdi.";
-        }
+          state.history.unshift({title: t.slice(0,40)+"..." , time: new Date().toLocaleString("uz-UZ"), honesty_score: r.honesty_score, script_completion: r.script_completion});
+        }catch(e){ errEl.textContent = "Xatolik yuz berdi."; }
         state.loadingAnalyze = false; render();
       } else {
-        if(!state.audioFile || state.loadingAnalyze) return;
-        state.uploading = true;
-        state.uploadProgress = 0;
-        state.loadingAnalyze = true;
-        state.result = null;
-        render();
-
+        if(!state.audioFile) return;
+        state.uploading = true; state.uploadProgress = 0; state.loadingAnalyze = true; state.result = null; render();
         try{
           const r = await apiAnalyzeAudio(state.audioFile);
           state.result = r;
-          state.history.unshift({
-            title: "🎙 " + state.audioFile.name,
-            time: new Date().toLocaleString("uz-UZ"),
-            honesty_score: r.honesty_score,
-            script_completion: r.script_completion
-          });
-        }catch(e){
-          errEl.textContent = "Audio tahlil qilishda xatolik yuz berdi.";
-        } finally {
-          state.uploading = false;
-          state.loadingAnalyze = false;
-          render();
-        }
+          state.history.unshift({title: "🎙 " + state.audioFile.name, time: new Date().toLocaleString("uz-UZ"), honesty_score: r.honesty_score, script_completion: r.script_completion});
+        }catch(e){ errEl.textContent = "Audio tahlilida xatolik."; }
+        finally { state.uploading = false; state.loadingAnalyze = false; render(); }
       }
     };
   }
