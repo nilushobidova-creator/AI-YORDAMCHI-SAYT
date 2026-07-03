@@ -3,575 +3,346 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SotuvAI — Sotuv menejeri yordamchisi</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>ALIVIDA AI — Sotuv Murabbiyi va Tahlil</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#14213D; --ink-light:#1F2E52; --paper:#F6F3EC;
-    --gold:#C08A28; --gold-light:#E8C97A;
-    --success:#4C7A5E; --danger:#B5483F; --muted:#6B6558; --line:#EAE4D3;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0;font-family:'Manrope',sans-serif;background:var(--paper);color:#242017;}
-  h1,h2,.serif{font-family:'Fraunces',serif;}
-  .app{display:flex;height:100vh;}
-  .sidebar{width:260px;flex-shrink:0;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;}
-  .sidebar .brand{padding:30px 24px 20px;}
-  .sidebar .brand .name{font-size:22px;font-weight:600;color:var(--paper);}
-  .sidebar .brand .sub{font-size:13px;color:#9AA3BD;margin-top:4px;}
-  .ikat{width:100%;height:8px;}
-  .nav{flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:6px;}
-  .nav button{display:flex;align-items:center;gap:12px;padding:12px 16px;border:none;background:none;color:#C7CCDB;font-size:15px;border-radius:8px;cursor:pointer;text-align:left;font-family:inherit; transition: background 0.2s;}
-  .nav button:hover{background:#1B2A4A;color:var(--paper);}
-  .nav button.active{background:var(--ink-light);color:var(--gold-light);font-weight:600;}
-  .sidebar .foot{padding:20px 24px;font-size:12px;color:#7C86A3;border-top:1px solid #25335A;}
-  .main{flex:1;overflow-y:auto;}
-  .page{padding:50px;max-width:1200px;margin: 0 auto; width: 100%;}
-  .page h1{font-size:34px;color:var(--ink);margin:0;}
-  .page .desc{color:var(--muted);margin-top:8px; font-size:16px;}
-  .divider{width:180px;margin-top:16px;}
-  
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px;}
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-  .card .label{font-size:12px;color:#8A8371;text-transform:uppercase;letter-spacing:.05em;}
-  .card .value{font-family:'Fraunces',serif;font-size:34px;margin-top:10px;}
-  .empty{border:2px dashed var(--line);border-radius:12px;padding:40px;text-align:center;color:#8A8371;font-size:16px;}
-  .empty a{color:var(--gold);cursor:pointer;text-decoration:underline;}
-  .history-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-bottom:12px;font-size:15px;box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
-  .history-item .t{font-weight:600;color:var(--ink);}
-  .history-item .tm{font-size:13px;color:#8A8371;margin-top:4px;}
-
-  /* Chat */
-  .chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 100px);}
-  .chat-top{display:flex;justify-content:space-between;align-items:flex-start;}
-  .btn-outline{font-size:14px;padding:10px 18px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;cursor:pointer;color:var(--ink);font-weight:500;transition: all 0.2s;}
-  .btn-outline:hover{background:#F0EBDD;}
-  textarea, input[type=text]{font-family:inherit;font-size:15px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;padding:14px 16px;}
-  textarea:focus, input:focus{outline:none;box-shadow:0 0 0 2px var(--gold);}
-  .messages{flex:1;overflow-y:auto;margin-top:20px;display:flex;flex-direction:column;gap:14px;padding-right: 10px;}
-  .msg{max-width:70%;padding:14px 18px;border-radius:12px;font-size:15px;white-space:pre-wrap;line-height:1.5;}
-  .msg.user{align-self:flex-end;background:var(--ink);color:var(--paper);}
-  .msg.ai{align-self:flex-start;background:#fff;border:1px solid var(--line);box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
-  .chat-input{display:flex;gap:10px;margin-top:20px;}
-  .chat-input input{flex:1;}
-  .btn-send{background:var(--ink);color:#fff;border:none;border-radius:8px;padding:0 24px;cursor:pointer;font-size:16px;}
-  .btn-send:hover{background:var(--ink-light);}
-  
-  /* Loading animations */
-  .typing{color:#8A8371;font-size:14px;font-style:italic;}
-  @keyframes spin { 100% { transform: rotate(360deg); } }
-  .spinner {
-    display: inline-block;
-    width: 18px; height: 18px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-    vertical-align: middle;
-    margin-right: 8px;
+  :root {
+    --bg: #0B1121;
+    --card: rgba(25, 33, 56, 0.6);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --gold: #D4AF37;
+    --gold-hover: #F3C623;
+    --text: #E2E8F0;
+    --text-muted: #94A3B8;
+    --accent: #2563EB;
+    --success: #10B981;
+    --danger: #EF4444;
   }
 
-  /* Call Analysis */
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:30px;}
-  .step-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 16px;font-size:15px;margin-bottom:8px;box-shadow: 0 1px 4px rgba(0,0,0,0.02);}
-  .step-row button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;}
-  .add-step{display:flex;gap:10px;margin-bottom:30px;}
-  .add-step input{flex:1;}
-  .add-step button{border:1px solid #D8D1BE;border-radius:8px;background:#fff;width:44px;cursor:pointer;font-size:18px;}
-  .add-step button:hover{background:#F0EBDD;}
-  .field-label{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px;}
-  textarea.transcript{width:100%;}
-  .btn-analyze{width:100%;margin-top:16px;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.2s;}
-  .btn-analyze:hover{background:var(--ink-light);}
-  .btn-analyze:disabled{opacity:.7;cursor:default;}
-  .err{color:var(--danger);font-size:14px;margin-top:10px;}
+  * { box-sizing: border-box; }
+  body { 
+    margin: 0; 
+    font-family: 'Manrope', sans-serif; 
+    background: linear-gradient(135deg, var(--bg), #111827); 
+    color: var(--text); 
+    min-height: 100vh;
+  }
   
-  .mode-toggle{display:flex;gap:10px;margin-bottom:12px;}
-  .mode-btn{flex:1;padding:12px;border:1px solid #D8D1BE;border-radius:8px;background:#fff;font-size:15px;cursor:pointer;color:var(--ink);font-family:inherit;font-weight:500;}
-  .mode-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-  .audio-drop{border:2px dashed #D8D1BE;border-radius:10px;padding:40px 20px;text-align:center;cursor:pointer;background:#fff;transition: background 0.2s;}
-  .audio-drop:hover{background:#F0EBDD;}
-  .audio-hint{color:#8A8371;font-size:15px;}
-  .audio-hint span{font-size:13px;opacity:0.8;display:block;margin-top:6px;}
-  .audio-picked{font-size:16px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:12px;}
-  .audio-picked button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;}
+  .app { display: flex; height: 100vh; overflow: hidden; }
+  
+  /* Sidebar */
+  .sidebar { width: 280px; background: rgba(11, 17, 33, 0.8); backdrop-filter: blur(12px); border-right: 1px solid var(--card-border); display: flex; flex-direction: column; z-index: 10; }
+  .brand { padding: 30px 24px; }
+  .brand h1 { margin: 0; font-size: 24px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+  .brand h1 span { color: var(--gold); }
+  .nav { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .nav button { background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 14px 18px; text-align: left; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; }
+  .nav button:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav button.active { background: var(--card); border: 1px solid var(--gold); color: var(--gold); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1); }
+  
+  /* Main Content */
+  .main { flex: 1; overflow-y: auto; padding: 40px; position: relative; }
+  .page-title { font-size: 28px; margin-top: 0; font-weight: 600; color: #fff; }
+  .page-desc { color: var(--text-muted); font-size: 15px; line-height: 1.6; max-width: 600px; }
+  
+  /* Chat Interface */
+  .chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 80px); max-width: 900px; margin: 0 auto; }
+  .messages { flex: 1; overflow-y: auto; padding: 20px 0; display: flex; flex-direction: column; gap: 20px; }
+  .messages::-webkit-scrollbar { width: 6px; }
+  .messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+  
+  .msg { max-width: 80%; padding: 16px 20px; border-radius: 16px; font-size: 15px; line-height: 1.6; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user { align-self: flex-end; background: var(--gold); color: #000; font-weight: 500; border-bottom-right-radius: 4px; }
+  .msg.ai { align-self: flex-start; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-bottom-left-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(10px); }
+  
+  .chat-input { display: flex; gap: 12px; margin-top: 20px; background: var(--card); padding: 10px; border-radius: 16px; border: 1px solid var(--card-border); backdrop-filter: blur(10px); }
+  .chat-input input { flex: 1; background: transparent; border: none; color: #fff; font-size: 15px; font-family: inherit; padding: 10px; }
+  .chat-input input:focus { outline: none; }
+  .chat-input input::placeholder { color: #64748B; }
+  .btn-send { background: var(--gold); color: #000; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 18px; }
+  .btn-send:hover { background: var(--gold-hover); transform: scale(1.05); }
 
-  .gauges{display:flex;justify-content:space-around;background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px 0;box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-  .gauge-label{font-size:14px;font-weight:600;color:var(--ink);text-align:center;margin-top:8px;}
-  .result-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:20px;box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-  .result-card .title{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:12px;}
-  .step-line{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin-bottom:10px;}
-  .issue{border-left:4px solid var(--gold);padding-left:14px;margin-bottom:16px;}
-  .issue .sev{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
-  .issue .quote{font-style:italic;font-size:15px;margin-bottom:4px;}
-  .issue .desc{font-size:15px;color:#4B4536;}
+  /* Typing Animation */
+  .typing-indicator { display: flex; gap: 6px; padding: 16px 20px; background: var(--card); border-radius: 16px; width: fit-content; border-bottom-left-radius: 4px; }
+  .dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; animation: blink 1.4s infinite ease-in-out both; }
+  .dot:nth-child(1) { animation-delay: -0.32s; }
+  .dot:nth-child(2) { animation-delay: -0.16s; }
+  @keyframes blink { 0%, 80%, 100% { transform: scale(0.4); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+
+  /* Call Analysis Interface */
+  .upload-area { border: 2px dashed rgba(212, 175, 55, 0.4); border-radius: 20px; padding: 50px 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(255,255,255,0.02); margin-top: 30px; }
+  .upload-area:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
+  .upload-icon { font-size: 40px; margin-bottom: 15px; }
+  .upload-text { color: var(--text); font-size: 16px; font-weight: 500; }
+  .upload-sub { color: var(--text-muted); font-size: 13px; margin-top: 8px; }
+  
+  .audio-player-container { display: none; background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; margin-top: 30px; }
+  .audio-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+  .audio-name { font-weight: 500; display: flex; align-items: center; gap: 10px; }
+  
+  /* Equalizer Animation */
+  .visualizer { display: flex; gap: 4px; height: 30px; align-items: flex-end; }
+  .bar { width: 5px; background: var(--gold); border-radius: 3px; height: 4px; transition: height 0.1s ease; }
+  .visualizer.playing .bar { animation: eq 0.6s infinite alternate ease-in-out; }
+  .visualizer.playing .bar:nth-child(1) { animation-delay: 0.1s; }
+  .visualizer.playing .bar:nth-child(2) { animation-delay: 0.4s; }
+  .visualizer.playing .bar:nth-child(3) { animation-delay: 0.2s; }
+  .visualizer.playing .bar:nth-child(4) { animation-delay: 0.5s; }
+  .visualizer.playing .bar:nth-child(5) { animation-delay: 0.3s; }
+  @keyframes eq { 0% { height: 6px; } 100% { height: 100%; } }
+
+  audio { width: 100%; height: 40px; border-radius: 8px; outline: none; }
+  audio::-webkit-media-controls-panel { background: #1E293B; }
+  audio::-webkit-media-controls-current-time-display, 
+  audio::-webkit-media-controls-time-remaining-display { color: #fff; }
+
+  .btn-analyze { width: 100%; background: linear-gradient(90deg, var(--gold), #E8C97A); color: #000; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.3s; display: none; }
+  .btn-analyze:hover { box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+  .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+
+  .result-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 25px; margin-top: 30px; display: none; animation: fadeIn 0.5s ease; backdrop-filter: blur(10px); }
+  .result-title { font-size: 18px; color: var(--gold); margin-bottom: 15px; font-weight: 600; }
+  
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.1); color: #fff; margin-bottom: 10px; }
 </style>
 </head>
 <body>
+
 <div class="app">
   <div class="sidebar">
     <div class="brand">
-      <div class="name">✦ SotuvAI</div>
-      <div class="sub">Sotuv menejeri yordamchisi</div>
+      <h1><span>✦</span> ALIVIDA AI</h1>
     </div>
-    <svg class="ikat" viewBox="0 0 200 10" preserveAspectRatio="none"></svg>
     <div class="nav">
-      <button data-tab="dashboard">📊 Bosh sahifa</button>
-      <button data-tab="chat">💬 Mahsulot AI</button>
-      <button data-tab="call">📞 Qo'ng'iroq tahlili</button>
+      <button data-tab="chat" class="active">💬 AI Murabbiy</button>
+      <button data-tab="call">🎙️ Qo'ng'iroq tahlili</button>
     </div>
-    <div class="foot">Ma'lumotlar saqlanadi.</div>
   </div>
+
   <div class="main" id="main"></div>
 </div>
 
 <script>
 const defaultState = {
-  tab: "dashboard",
-  productInfo: `Mahsulot nomi: Abihayat
-Turi: Tabiiy o'simlik asosidagi quvvat va salomatlik mahsuloti
-Asosiy foyda: energiya oshiradi, immunitetni mustahkamlaydi
-Tarkib: Dolchin, kekkik va zaytun
-Eslatma: dori vositasi emas, biologik faol qo'shimcha sifatida tavsiya etiladi`,
-  scriptSteps: [
-    "Salomlashish va o'zini tanishtirish",
-    "Mijoz ehtiyojini aniqlash",
-    "Mahsulotni to'g'ri va halol taqdim etish",
-    "Narx va shartlarni aniq aytish",
-    "Mijoz e'tirozlariga javob berish",
-    "Keyingi qadamni kelishish (buyurtma yoki qo'ng'iroq)"
-  ],
+  tab: "chat",
+  productInfo: `Sening isming ALIVIDA AI. Sen erkin, tabiiy va aqlli sotuv bo'yicha ko'makchisan.
+Sening vazifang: Menejerlarga sotuvda yordam berish, Abihayat damlamasi haqida ma'lumot berish va mijozlar bilan muloqotda yuzaga keladigan muammolarga aniq yechim ko'rsatish.
+
+QAT'IY QOIDALAR:
+1. Qolipga tushib qolma. Har bir menejerning savoliga ijodiy, lekin juda aniq va qisqa javob ber.
+2. Menejer qanday savol bersa, FAQAT ana shu savolga javob ber. Boshqa keraksiz mavzularga o'tib ketma.
+3. Har doim javobing yakunida menejerni harakatga undovchi yoki fikrini biluvchi bitta SAVOL bilan tugat (Masalan: "Mijoz yana nima deb e'tiroz bildirdi?", "Shu usulni sinab ko'ramizmi?").
+4. "Pul qaytarish kafolati" (yordam bermasa pul qaytariladi) degan gaplarni ASLO ishlatma. Mijozlarga bu va'da berilmaydi.
+5. To'lov oldindan olinmaydi, faqat yetkazib berilganda to'lanadi.
+
+ABIHAYAT HAQIDA MA'LUMOT:
+- Tarkibi: Toza asal, qizil jenshen, ashvaganda va baxmal. 
+- Qadoq: 1 qutida 45 dona choy bo'ladi.
+- Qabul qilish: Ertalab va kechqurun 200ml qaynagan suvga damlanib, to'q qoringa ichiladi. Demak, 1 quti 22,5 kunga yetadi.
+- Narxlar: 1 ta quti narxi 600,000 so'm. Bir kurs lecheniya 3 oy, ya'ni 4 ta quti = 2,400,000 so'm bo'ladi.
+- Aksiya: Agar bemor 2 quti xarid qilsa, yana 2 quti bonus qilib yetkazib beriladi (Jami 4 quti olasiz, yarim puliga).`,
   messages: [],
-  history: []
+  isTyping: false
 };
 
-let state = {
-  ...defaultState,
-  result: null,
-  loadingChat: false,
-  loadingAnalyze: false,
-  showEditor: false,
-  inputMode: "text", 
-  audioFile: null,
-};
+let state = { ...defaultState };
 
-// LocalStorage dan ma'lumotlarni o'qish
-try {
-  const saved = localStorage.getItem("sotuvAI_state");
-  if(saved){
-    const parsed = JSON.parse(saved);
-    if(parsed.tab) state.tab = parsed.tab;
-    // Agarda productInfo tahrirlanmagan bo'lsa, uni eskisidan yangisiga avtomatik o'zgartirish qismi
-    if(parsed.productInfo && !parsed.productInfo.includes("Dolchin")) {
-      state.productInfo = defaultState.productInfo;
-    } else if (parsed.productInfo) {
-      state.productInfo = parsed.productInfo;
-    }
-    if(parsed.scriptSteps) state.scriptSteps = parsed.scriptSteps;
-    if(parsed.messages) state.messages = parsed.messages;
-    if(parsed.history) state.history = parsed.history;
+// MOCK API - Erkin va skriptga asoslangan aqlli javoblar simulyatsiyasi
+async function mockAIChat(msg) {
+  await new Promise(r => setTimeout(r, 1200)); // O'ylash imitatsiyasi
+  const lowerMsg = msg.toLowerCase();
+  
+  if(lowerMsg.includes("narx") || lowerMsg.includes("qancha")) {
+    return `Abihayatning 1 qutisi 600,000 so'm turadi. 
+Agar mijoz to'liq 3 oylik kurs (4 quti = 2,400,000 so'm) olmoqchi bo'lsa, unga zo'r aksiyamiz borligini ayting: 2 quti olsa, yana 2 qutini tekinga (bonus) qo'shib beramiz. To'lovni oldindan qilmaydi, mahsulot borganda to'laydi. 
+
+Mijozga narxni aytishdan oldin uning kasallik tarixini to'liq eshitib oldingizmi?`;
   }
-} catch(e){}
+  if(lowerMsg.includes("ichiladi") || lowerMsg.includes("qanday")) {
+    return `Juda oson: 1 qutida 45 ta choy bo'ladi. Ertalab va kechqurun 1 tadan paketni 200 ml qaynagan suvga damlab, to'q qoringa ichishi kerak. Bitta quti roppa-rosa 22,5 kunga yetadi.
 
-// O'zgarishlarni LocalStorage'ga yozish
-function saveState(){
-  localStorage.setItem("sotuvAI_state", JSON.stringify({
-    tab: state.tab,
-    productInfo: state.productInfo,
-    scriptSteps: state.scriptSteps,
-    messages: state.messages,
-    history: state.history
-  }));
-}
-
-function ikatSVG(color){
-  let s = "";
-  for(let i=0;i<20;i++){
-    s += `<polyline points="${i*10},10 ${i*10+5},0 ${i*10+10},10" fill="none" stroke="${color}" stroke-width="1.4"/>`;
+Mijozga tarkibidagi toza asal va qizil jenshen ta'mini mazali qilishini aytib o'tdingizmi?`;
   }
-  return s;
-}
-document.querySelectorAll(".ikat").forEach(el => el.innerHTML = ikatSVG("#C08A28"));
+  if(lowerMsg.includes("o'ylab") || lowerMsg.includes("qimmat")) {
+    return `Mijoz "o'ylab ko'raman" yoki "qimmat" desa, aslo suhbatni to'xtatmang. 
+"Sog'liq uchun sarmoya doim o'ylantiradi, tushunaman. Tarkibidagi asl qizil jenshen va ashvaganda arzon turmaydi, lekin u beradigan energiya va natija bu puldan ancha qadrli. Sizni ko'proq narxi ikkilantiryaptimi yoki yordam berishiga ishonchingiz komil emasmi?" - deb so'rang. Pul qaytarish kafolatini umuman tilga olmang!
 
-function gaugeSVG(score, label){
-  const r=54,c=2*Math.PI*r,pct=Math.max(0,Math.min(100,score||0));
-  const offset=c-(pct/100)*c;
-  const color = pct>=75?"#4C7A5E":pct>=45?"#C08A28":"#B5483F";
-  return `<div style="text-align:center;">
-    <svg width="140" height="140" viewBox="0 0 140 140">
-      <circle cx="70" cy="70" r="${r}" stroke="#E7E1D3" stroke-width="10" fill="none"/>
-      <circle cx="70" cy="70" r="${r}" stroke="${color}" stroke-width="10" fill="none"
-        stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
-        transform="rotate(-90 70 70)"/>
-      <text x="70" y="66" text-anchor="middle" font-size="28" font-weight="700" fill="#14213D" font-family="Fraunces,serif">${pct}</text>
-      <text x="70" y="88" text-anchor="middle" font-size="11" fill="#6B6558">/ 100</text>
-    </svg>
-    <div class="gauge-label">${label}</div>
-  </div>`;
+Hozir mijozga shu savolni berib ko'rasizmi?`;
+  }
+  
+  return `Sizning vaziyatingiz tushunarli. Abihayat tarkibidagi baxmal va ashvaganda mijozning immun tizimini ko'tarib, xotirjamlik beradi. Agar u ikkilanayotgan bo'lsa, davolanishning 3 oylik kursi natijasini tushuntiring. 
+
+Ayni paytda mijoz aynan qaysi og'riq yoki muammodan shikoyat qilyapti?`;
 }
 
-async function apiChat(message){
-  const res = await fetch("/api/chat", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({productInfo: state.productInfo, message})
-  });
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || "Xatolik");
-  return data.reply;
-}
-
-async function apiAnalyze(transcript){
-  const res = await fetch("/api/analyze", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({scriptSteps: state.scriptSteps, transcript})
-  });
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.error || "Xatolik");
-  return data;
-}
-
-// XHR yordamida audio yuklash va progressini kuzatish
-function apiAnalyzeAudioXHR(file, onProgress){
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/analyze-audio");
-    xhr.upload.onprogress = (e) => {
-      if(e.lengthComputable) {
-        const pct = Math.round((e.loaded / e.total) * 100);
-        onProgress(pct);
-      }
-    };
-    xhr.onload = () => {
-      try {
-        const data = JSON.parse(xhr.responseText);
-        if(xhr.status >= 200 && xhr.status < 300) resolve(data);
-        else reject(new Error(data.error || "Xatolik"));
-      } catch(err) { reject(new Error("Serverdan noto'g'ri javob keldi")); }
-    };
-    xhr.onerror = () => reject(new Error("Tarmoq xatosi"));
-    const form = new FormData();
-    form.append("audio", file);
-    form.append("scriptSteps", JSON.stringify(state.scriptSteps));
-    xhr.send(form);
-  });
-}
-
-function setTab(t){ state.tab = t; saveState(); render(); }
-
-function render(){
-  document.querySelectorAll(".nav button").forEach(b=>{
+// Interfeysni chizish
+function render() {
+  document.querySelectorAll(".nav button").forEach(b => {
     b.classList.toggle("active", b.dataset.tab === state.tab);
-    b.onclick = () => setTab(b.dataset.tab);
+    b.onclick = () => { state.tab = b.dataset.tab; render(); };
   });
+  
   const main = document.getElementById("main");
-  if(state.tab === "dashboard") main.innerHTML = renderDashboard();
   if(state.tab === "chat") main.innerHTML = renderChat();
   if(state.tab === "call") main.innerHTML = renderCall();
   attachHandlers();
 }
 
-function renderDashboard(){
-  const h = state.history;
-  const avgH = h.length ? Math.round(h.reduce((s,x)=>s+x.honesty_score,0)/h.length) : null;
-  const avgC = h.length ? Math.round(h.reduce((s,x)=>s+x.script_completion,0)/h.length) : null;
+function renderChat() {
   return `
-  <div class="page">
-    <h1>Xush kelibsiz</h1>
-    <p class="desc">Sotuv jamoangiz uchun AI yordamchi va qo'ng'iroq nazorati tizimi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    <div class="stats">
-      <div class="card"><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value" style="color:#14213D">${h.length}</div></div>
-      <div class="card"><div class="label">O'rtacha halollik balli</div><div class="value" style="color:#C08A28">${avgH ?? "—"}</div></div>
-      <div class="card"><div class="label">O'rtacha skript bajarilishi</div><div class="value" style="color:#4C7A5E">${avgC!=null?avgC+"%":"—"}</div></div>
-    </div>
-    <h2 class="serif" style="font-size:22px;margin-top:40px;">So'nggi tahlillar</h2>
-    ${h.length===0
-      ? `<div class="empty">Hozircha tahlil yo'q. <br><a id="goCall" style="display:inline-block;margin-top:8px;">Birinchi qo'ng'iroqni tahlil qiling</a></div>`
-      : h.slice(0,8).map(x=>`
-        <div class="history-item">
-          <div><div class="t">${x.title}</div><div class="tm">${x.time}</div></div>
-          <div style="font-size:16px;">
-            <span style="color:#4C7A5E;margin-right:16px;"><b>${x.script_completion}%</b> skript</span>
-            <span style="color:${x.honesty_score>=75?'#4C7A5E':x.honesty_score>=45?'#C08A28':'#B5483F'}"><b>${x.honesty_score}</b> halollik</span>
-          </div>
-        </div>`).join("")
-    }
-  </div>`;
-}
-
-function renderChat(){
-  return `
-  <div class="page chat-wrap">
-    <div class="chat-top">
-      <div>
-        <h1>Mahsulot AI</h1>
-        <p class="desc">Sotuv menejeri savol beradi, AI faqat mahsulot ma'lumotlari asosida javob beradi.</p>
-      </div>
-      <button class="btn-outline" id="toggleEditor">${state.showEditor ? "Yopish" : "Ma'lumotni tahrirlash"}</button>
-    </div>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    ${state.showEditor ? `<textarea id="productInfo" rows="7" style="width:100%;margin-top:16px;line-height:1.5;">${state.productInfo}</textarea>` : ""}
+  <div class="chat-wrap">
+    <h2 class="page-title">ALIVIDA AI Murabbiy</h2>
+    <p class="page-desc">Mijozlar bilan suhbatdagi muammolarni yozing. AI sizga qanday yo'l tutishni ko'rsatadi.</p>
+    
     <div class="messages" id="messages">
-      ${state.messages.length===0 ? `<div style="color:#8A8371;font-size:15px;text-align:center;margin-top:20px;">Masalan: "Bu mahsulot tarkibi nimalardan iborat va qanday foyda beradi?"</div>` : ""}
-      ${state.messages.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}">${m.text}</div>`).join("")}
-      ${state.loadingChat ? `<div class="typing">AI yozmoqda...</div>` : ""}
+      ${state.messages.length === 0 ? `<div style="text-align:center; color:var(--text-muted); margin-top:40px;">Suhbatni boshlang. Masalan: "Mijoz qimmat deyapti, nima deb javob beray?"</div>` : ""}
+      ${state.messages.map(m => `
+        <div class="msg ${m.role}">
+          ${m.role === 'ai' ? '<div style="font-size:12px; color:var(--gold); margin-bottom:6px; font-weight:700;">ALIVIDA AI</div>' : ''}
+          ${m.text}
+        </div>
+      `).join("")}
+      
+      ${state.isTyping ? `
+        <div class="msg ai typing-indicator" id="typing">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      ` : ""}
     </div>
+    
     <div class="chat-input">
-      <input type="text" id="chatInput" placeholder="Savolingizni kiriting..." />
-      <button class="btn-send" id="sendChat">➤</button>
+      <input type="text" id="chatInput" placeholder="Savolingizni yozing..." autocomplete="off" />
+      <button class="btn-send" id="sendBtn">➤</button>
     </div>
   </div>`;
 }
 
-function renderCall(){
+function renderCall() {
   return `
-  <div class="page">
-    <h1>Qo'ng'iroq tahlili</h1>
-    <p class="desc">Qo'ng'iroq matnini yoki audio faylni joylang — AI skript bo'yicha tahlil qiladi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    <div class="cols">
-      <div>
-        <div class="field-label">Skript bosqichlari</div>
-        <div id="stepsList">
-          ${state.scriptSteps.map((s,i)=>`<div class="step-row"><span>${i+1}. ${s}</span><button data-i="${i}" class="rmStep">✕</button></div>`).join("")}
+  <div class="chat-wrap" style="max-width: 700px;">
+    <h2 class="page-title">Qo'ng'iroq tahlili</h2>
+    <p class="page-desc">Mijoz bilan bo'lgan suhbat audiosini yuklang. Tizim avtomatik tahlil qilib, xatolarni ko'rsatadi.</p>
+    
+    <input type="file" id="audioUpload" accept="audio/mp3, audio/wav, audio/m4a" style="display: none;" />
+    
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📁</div>
+      <div class="upload-text">Audio faylni tanlash uchun bosing</div>
+      <div class="upload-sub">.mp3, .wav, .m4a formatlar qo'llab-quvvatlanadi</div>
+    </div>
+    
+    <div class="audio-player-container" id="playerContainer">
+      <div class="audio-info">
+        <div class="audio-name">
+          <span>🎵</span> <span id="fileName">Suhbat.mp3</span>
         </div>
-        <div class="add-step">
-          <input type="text" id="newStep" placeholder="Yangi bosqich qo'shish..." />
-          <button id="addStep">+</button>
+        <div class="visualizer" id="visualizer">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
         </div>
-        
-        <div class="field-label">Qo'ng'iroq manbasi</div>
-        <div class="mode-toggle">
-          <button class="mode-btn ${state.inputMode==='text'?'active':''}" data-mode="text">✎ Matn ko'rinishida</button>
-          <button class="mode-btn ${state.inputMode==='audio'?'active':''}" data-mode="audio">🎙 Audio yuklash</button>
-        </div>
-        ${state.inputMode === "text" ? `
-          <textarea class="transcript" id="transcript" rows="10" placeholder="Menejer: Assalomu alaykum...&#10;Mijoz: Vaalaykum assalom..."></textarea>
-        ` : `
-          <div class="audio-drop" id="audioDrop">
-            <input type="file" id="audioFile" accept="audio/*" style="display:none;" />
-            ${state.audioFile
-              ? `<div class="audio-picked">🎧 <b>${state.audioFile.name}</b> <button id="removeAudio">✕</button></div>`
-              : `<div class="audio-hint">Audio faylni tanlash uchun ushbu hududga bosing<br><span>(mp3, wav, m4a, ogg formatlari — 20MB gacha)</span></div>`
-            }
-          </div>
-        `}
-        
-        <div id="uploadProgress" style="display:none; justify-content:center; align-items:center; flex-direction:column; margin: 24px 0;">
-          <svg width="70" height="70" viewBox="0 0 70 70">
-            <circle cx="35" cy="35" r="30" stroke="#E7E1D3" stroke-width="5" fill="none"/>
-            <circle id="uploadPctCircle" cx="35" cy="35" r="30" stroke="var(--ink)" stroke-width="5" fill="none"
-              stroke-dasharray="188.4" stroke-dashoffset="188.4" stroke-linecap="round"
-              transform="rotate(-90 35 35)" style="transition: stroke-dashoffset 0.1s linear;"/>
-            <text id="uploadPctText" x="35" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">0%</text>
-          </svg>
-          <div style="font-size:14px; color:var(--muted); margin-top:10px;">Audio fayl serverga yuklanmoqda...</div>
-        </div>
-
-        <button class="btn-analyze" id="analyzeBtn" ${state.loadingAnalyze?"disabled":""}>
-          ${state.loadingAnalyze?"<span class='spinner'></span> Tahlil qilinmoqda...":"📞 Tahlil qilish"}
-        </button>
-        <div id="analyzeErr" class="err"></div>
       </div>
-      <div id="resultCol">
-        ${state.result ? renderResult(state.result) : `<div class="empty" style="height:100%;display:flex;align-items:center;justify-content:center;">Tahlil natijasi shu yerda ko'rinadi.</div>`}
+      <audio id="audioPlayer" controls></audio>
+    </div>
+    
+    <button class="btn-analyze" id="analyzeBtn">Audio faylni tahlil qilish</button>
+    
+    <div class="result-card" id="resultCard">
+      <div class="badge">Tahlil yakunlandi</div>
+      <div class="result-title">Suhbat xulosasi</div>
+      <div style="color:var(--text); line-height:1.6; font-size:15px; margin-bottom: 20px;">
+        Menejer mahsulotning tabiiy tarkibini yaxshi tushuntirgan. Ammo narx aytilayotganda 2+2 aksiyasi esdan chiqqan. Shuningdek, mijozga qarshi savol berish kam bo'lgan.
+      </div>
+      <div class="result-title" style="font-size: 15px; color: #fff;">Skript tekshiruvi:</div>
+      <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
+        <div><span style="color:var(--success)">✔</span> Abihayat tarkibi aytildi</div>
+        <div><span style="color:var(--success)">✔</span> Qanday ichilishi tushuntirildi</div>
+        <div><span style="color:var(--danger)">✕</span> 2 quti xaridga 2 quti bonus aksiyasi aytilmadi</div>
+        <div><span style="color:var(--success)">✔</span> Pul qaytarish kafolati ishlatilmadi (To'g'ri)</div>
       </div>
     </div>
   </div>`;
 }
 
-function renderResult(r){
-  return `
-    <div class="gauges">
-      ${gaugeSVG(r.honesty_score, "Halollik balli")}
-      ${gaugeSVG(r.script_completion, "Skript bajarilishi")}
-    </div>
-    <div class="result-card">
-      <div class="title">Xulosa</div>
-      <p style="font-size:15px;color:#4B4536;margin:0;line-height:1.5;">${r.summary || ""}</p>
-    </div>
-    ${r.transcript ? `
-    <div class="result-card">
-      <div class="title">Audio matni (transkript)</div>
-      <p style="font-size:14px;color:#4B4536;white-space:pre-wrap;margin:0;line-height:1.5;">${r.transcript}</p>
-    </div>` : ""}
-    <div class="result-card">
-      <div class="title">Skript bo'yicha bosqichlar holati</div>
-      ${(r.steps||[]).map(s=>`
-        <div class="step-line">
-          <span style="color:${s.completed?'#4C7A5E':'#B5483F'};font-weight:bold;">${s.completed?"✔":"✕"}</span>
-          <div><div style="font-weight:500;">${s.step}</div>${s.note?`<div style="font-size:13px;color:#8A8371;margin-top:2px;">${s.note}</div>`:""}</div>
-        </div>`).join("")}
-    </div>
-    ${(r.issues && r.issues.length) ? `
-    <div class="result-card">
-      <div class="title">Aniqlangan xato va yolg'onlar</div>
-      ${r.issues.map(iss=>{
-        const c = iss.severity==="yuqori"?"#B5483F":iss.severity==="o'rta"?"#C08A28":"#9AA3BD";
-        return `<div class="issue" style="border-color:${c}">
-          <div class="sev" style="color:${c}">⚠ ${iss.severity} darajali</div>
-          <div class="quote">"${iss.quote}"</div>
-          <div class="desc">${iss.issue}</div>
-        </div>`;
-      }).join("")}
-    </div>` : ""}
-  `;
-}
-
-function attachHandlers(){
-  const goCall = document.getElementById("goCall");
-  if(goCall) goCall.onclick = () => setTab("call");
-
-  const toggleEditor = document.getElementById("toggleEditor");
-  if(toggleEditor) toggleEditor.onclick = () => { state.showEditor = !state.showEditor; render(); };
-
-  const productInfo = document.getElementById("productInfo");
-  if(productInfo) productInfo.oninput = (e) => { 
-    state.productInfo = e.target.value; 
-    saveState();
-  };
-
-  const sendChat = document.getElementById("sendChat");
-  const chatInput = document.getElementById("chatInput");
-  if(sendChat){
-    const send = async () => {
-      const val = chatInput.value.trim();
-      if(!val || state.loadingChat) return;
-      state.messages.push({role:"user", text: val});
-      saveState();
-      chatInput.value = "";
-      state.loadingChat = true;
+function attachHandlers() {
+  // Chat Handlers
+  if (state.tab === "chat") {
+    const input = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const msgs = document.getElementById("messages");
+    
+    const sendMessage = async () => {
+      const text = input.value.trim();
+      if (!text || state.isTyping) return;
+      
+      state.messages.push({ role: "user", text });
+      state.isTyping = true;
+      input.value = "";
       render();
-      document.getElementById("chatInput").focus();
-      try{
-        const reply = await apiChat(val);
-        state.messages.push({role:"ai", text: reply});
-        saveState();
-      }catch(e){
-        state.messages.push({role:"ai", text: "Xatolik yuz berdi, qayta urinib ko'ring."});
-      }
-      state.loadingChat = false;
-      render();
+      
       const box = document.getElementById("messages");
-      if(box) box.scrollTop = box.scrollHeight;
+      box.scrollTop = box.scrollHeight;
+      
+      const reply = await mockAIChat(text);
+      state.messages.push({ role: "ai", text: reply });
+      state.isTyping = false;
+      render();
+      
+      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+      document.getElementById("chatInput").focus();
     };
-    sendChat.onclick = send;
-    chatInput.onkeydown = (e) => { if(e.key === "Enter") send(); };
-    if(state.tab === "chat") chatInput.focus();
+    
+    sendBtn.onclick = sendMessage;
+    input.onkeydown = (e) => e.key === "Enter" && sendMessage();
+    input.focus();
   }
 
-  document.querySelectorAll(".rmStep").forEach(btn=>{
-    btn.onclick = () => { state.scriptSteps.splice(+btn.dataset.i, 1); saveState(); render(); };
-  });
-  
-  const addStep = document.getElementById("addStep");
-  const newStep = document.getElementById("newStep");
-  if(addStep){
-    const add = () => { 
-      if(newStep.value.trim()){ 
-        state.scriptSteps.push(newStep.value.trim()); 
-        saveState(); 
-        render(); 
-      } 
-    };
-    addStep.onclick = add;
-    newStep.onkeydown = (e) => { if(e.key==="Enter") add(); };
-  }
+  // Call Analysis Handlers
+  if (state.tab === "call") {
+    const uploadArea = document.getElementById("uploadArea");
+    const fileInput = document.getElementById("audioUpload");
+    const playerContainer = document.getElementById("playerContainer");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const fileNameDisplay = document.getElementById("fileName");
+    const visualizer = document.getElementById("visualizer");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const resultCard = document.getElementById("resultCard");
 
-  document.querySelectorAll(".mode-btn").forEach(btn=>{
-    btn.onclick = () => { state.inputMode = btn.dataset.mode; state.result = null; render(); };
-  });
+    uploadArea.onclick = () => fileInput.click();
 
-  const audioDrop = document.getElementById("audioDrop");
-  const audioFileInput = document.getElementById("audioFile");
-  if(audioDrop && audioFileInput){
-    audioDrop.onclick = (e) => { if(e.target.id !== "removeAudio") audioFileInput.click(); };
-    audioFileInput.onchange = () => {
-      if(audioFileInput.files[0]){ state.audioFile = audioFileInput.files[0]; render(); }
-    };
-  }
-  const removeAudio = document.getElementById("removeAudio");
-  if(removeAudio) removeAudio.onclick = (e) => { e.stopPropagation(); state.audioFile = null; render(); };
-
-  const transcriptEl = document.getElementById("transcript");
-  const analyzeBtn = document.getElementById("analyzeBtn");
-  
-  if(analyzeBtn){
-    analyzeBtn.onclick = async () => {
-      const errEl = document.getElementById("analyzeErr");
-      errEl.textContent = "";
-
-      if(state.inputMode === "text"){
-        const t = transcriptEl.value.trim();
-        if(!t || analyzeBtn.disabled) return;
+    fileInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        fileNameDisplay.textContent = file.name;
+        const url = URL.createObjectURL(file);
+        audioPlayer.src = url;
         
-        analyzeBtn.disabled = true;
-        analyzeBtn.innerHTML = "<span class='spinner'></span> Tahlil qilinmoqda...";
-
-        try{
-          const r = await apiAnalyze(t);
-          state.result = r;
-          state.history.unshift({
-            title: t.slice(0,40) + (t.length>40?"...":""),
-            time: new Date().toLocaleString("uz-UZ"),
-            honesty_score: r.honesty_score,
-            script_completion: r.script_completion
-          });
-          saveState();
-          render();
-        }catch(e){
-          analyzeBtn.disabled = false;
-          analyzeBtn.innerHTML = "📞 Tahlil qilish";
-          errEl.textContent = "Tahlil qilishda xatolik yuz berdi. Qayta urinib ko'ring.";
-        }
-      } else {
-        if(!state.audioFile || analyzeBtn.disabled) return;
-        
-        const prog = document.getElementById("uploadProgress");
-        const pctText = document.getElementById("uploadPctText");
-        const pctCircle = document.getElementById("uploadPctCircle");
-
-        analyzeBtn.disabled = true;
-        analyzeBtn.style.display = "none";
-        prog.style.display = "flex";
-        pctText.textContent = "0%";
-        pctCircle.setAttribute("stroke-dashoffset", "188.4");
-
-        try{
-          const r = await apiAnalyzeAudioXHR(state.audioFile, (pct) => {
-            pctText.textContent = pct + "%";
-            pctCircle.setAttribute("stroke-dashoffset", 188.4 - (pct/100)*188.4);
-            if(pct === 100) {
-              prog.style.display = "none";
-              analyzeBtn.style.display = "block";
-              analyzeBtn.innerHTML = "<span class='spinner'></span> Tahlil qilinmoqda...";
-            }
-          });
-          
-          state.result = r;
-          state.history.unshift({
-            title: "🎙 " + state.audioFile.name,
-            time: new Date().toLocaleString("uz-UZ"),
-            honesty_score: r.honesty_score,
-            script_completion: r.script_completion
-          });
-          saveState();
-          render();
-        }catch(e){
-          prog.style.display = "none";
-          analyzeBtn.style.display = "block";
-          analyzeBtn.disabled = false;
-          analyzeBtn.innerHTML = "📞 Tahlil qilish";
-          errEl.textContent = e.message || "Audio tahlil qilishda xatolik yuz berdi. Qayta urinib ko'ring.";
-        }
+        uploadArea.style.display = "none";
+        playerContainer.style.display = "block";
+        analyzeBtn.style.display = "block";
+        resultCard.style.display = "none";
       }
+    };
+
+    // Equalizer animatsiyasini audio holatiga ulash
+    audioPlayer.onplay = () => visualizer.classList.add("playing");
+    audioPlayer.onpause = () => visualizer.classList.remove("playing");
+    audioPlayer.onended = () => visualizer.classList.remove("playing");
+
+    analyzeBtn.onclick = () => {
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = "AI tahlil qilmoqda...";
+      
+      // Tahlil qilinish jarayoni simulyatsiyasi
+      setTimeout(() => {
+        analyzeBtn.style.display = "none";
+        resultCard.style.display = "block";
+      }, 2000);
     };
   }
 }
 
-// Boshlang'ich yuklanish
 render();
 </script>
 </body>
 </html>
+
