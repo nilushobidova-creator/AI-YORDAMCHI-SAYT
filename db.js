@@ -1,7 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const path = require('path');
-const fs = require('fs');
 
 const dbPath = path.join(__dirname, 'sotuvai.db');
 const db = new sqlite3.Database(dbPath);
@@ -62,13 +61,21 @@ const initDb = () => {
                         VALUES (?, ?, ?, ?, ?)`, 
                 [
                     'Abihayat', 
-                    null, // Pricing information excluded 
+                    null, 
                     'Clean honey, red ginseng, ashwagandha, baxmal', 
                     'Natural energy, vitality, cognitive support', 
                     'active'
                 ]);
             }
         });
+    });
+};
+
+initDb();
+
+module.exports = db;
+
+       });
     });
 };
 
