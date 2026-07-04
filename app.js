@@ -46,7 +46,7 @@ function ikatSVG(color) {
   }
   return s;
 }
-function scoreColor(v) { return v >= 75 ? "#4C7A5E" : v >= 45 ? "#C08A28" : "#B5483F"; }
+function scoreColor(v) { return v >= 75 ? "#2F6B4A" : v >= 45 ? "#C6992E" : "#8B2E2E"; }
 function fmtDate(s) {
   try { return new Date(s.replace(" ", "T") + "Z").toLocaleString("uz-UZ"); } catch (e) { return s; }
 }
@@ -159,7 +159,7 @@ function renderShell() {
         <div class="name">✦ SotuvAI</div>
         <div class="sub">Sotuv menejeri yordamchisi</div>
       </div>
-      <svg class="ikat" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+      <svg class="ikat" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
       <div class="nav">
         ${items.map(it => `
           <button data-view="${it.id}" class="${state.view===it.id?'active':''}">
@@ -271,12 +271,12 @@ async function loadAndRenderDashboard() {
   <div class="page">
     <h1>${isAdmin ? "Umumiy dashboard" : "Bosh sahifa"}</h1>
     <p class="desc">${isAdmin ? "Barcha operatorlar bo'yicha statistikasi." : "Sizning tahlillaringiz statistikasi."}</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
 
     <div class="stats">
-      <div class="card"><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value" style="color:#14213D">${t.count || 0}</div></div>
-      <div class="card"><div class="label">O'rtacha halollik balli</div><div class="value" style="color:#C08A28">${round(t.avg_honesty)}</div></div>
-      <div class="card"><div class="label">O'rtacha skript bajarilishi</div><div class="value" style="color:#4C7A5E">${t.avg_script!=null?round(t.avg_script)+"%":"—"}</div></div>
+      <div class="card"><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value" style="color:#0B1526">${t.count || 0}</div></div>
+      <div class="card"><div class="label">O'rtacha halollik balli</div><div class="value" style="color:#C6992E">${round(t.avg_honesty)}</div></div>
+      <div class="card"><div class="label">O'rtacha skript bajarilishi</div><div class="value" style="color:#2F6B4A">${t.avg_script!=null?round(t.avg_script)+"%":"—"}</div></div>
     </div>
 
     <div class="charts">
@@ -298,7 +298,7 @@ async function loadAndRenderDashboard() {
           <div class="history-item" data-id="${h.id}">
             <div><div class="t">${esc(h.title || "Qo'ng'iroq")}${h.full_name ? " — " + esc(h.full_name) : ""}</div><div class="tm">${fmtDate(h.created_at)}</div></div>
             <div>
-              <span style="color:#4C7A5E;margin-right:14px;">${h.script_completion}% skript</span>
+              <span style="color:#2F6B4A;margin-right:14px;">${h.script_completion}% skript</span>
               <span style="color:${scoreColor(h.honesty_score)}">${h.honesty_score} halollik</span>
             </div>
           </div>`).join("")
@@ -326,8 +326,8 @@ function drawDashboardCharts() {
     data: {
       labels: byDay.map(d => d.day),
       datasets: [
-        { label: "Halollik", data: byDay.map(d => Math.round(d.avg_honesty || 0)), borderColor: "#C08A28", backgroundColor: "#C08A2833", tension: .3 },
-        { label: "Skript bajarilishi", data: byDay.map(d => Math.round(d.avg_script || 0)), borderColor: "#4C7A5E", backgroundColor: "#4C7A5E33", tension: .3 },
+        { label: "Halollik", data: byDay.map(d => Math.round(d.avg_honesty || 0)), borderColor: "#C6992E", backgroundColor: "#C6992E33", tension: .3 },
+        { label: "Skript bajarilishi", data: byDay.map(d => Math.round(d.avg_script || 0)), borderColor: "#2F6B4A", backgroundColor: "#2F6B4A33", tension: .3 },
       ],
     },
     options: { responsive: true, scales: { y: { min: 0, max: 100 } }, plugins: { legend: { position: "bottom" } } },
@@ -342,7 +342,7 @@ function drawDashboardCharts() {
       datasets: [{
         label: "O'rtacha",
         data: [t.avg_honesty, t.avg_script, t.avg_confidence, t.avg_politeness, t.avg_knowledge, t.avg_closing].map(v => Math.round(v || 0)),
-        backgroundColor: "#C08A2833", borderColor: "#C08A28", pointBackgroundColor: "#14213D",
+        backgroundColor: "#C6992E33", borderColor: "#C6992E", pointBackgroundColor: "#0B1526",
       }],
     },
     options: { responsive: true, scales: { r: { min: 0, max: 100 } }, plugins: { legend: { display: false } } },
@@ -375,11 +375,11 @@ function progressRingSVG(pct) {
   return `
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 0;">
     <svg width="76" height="76" viewBox="0 0 76 76">
-      <circle cx="38" cy="38" r="${r}" stroke="#EAE4D3" stroke-width="7" fill="none"/>
-      <circle cx="38" cy="38" r="${r}" stroke="#C08A28" stroke-width="7" fill="none"
+      <circle cx="38" cy="38" r="${r}" stroke="#EFE8D2" stroke-width="7" fill="none"/>
+      <circle cx="38" cy="38" r="${r}" stroke="#C6992E" stroke-width="7" fill="none"
         stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
         transform="rotate(-90 38 38)" style="transition:stroke-dashoffset .3s linear"/>
-      <text x="38" y="43" text-anchor="middle" font-size="15" font-weight="700" fill="#14213D" font-family="Fraunces,serif">${pct}%</text>
+      <text x="38" y="43" text-anchor="middle" font-size="15" font-weight="700" fill="#0B1526" font-family="Fraunces,serif">${pct}%</text>
     </svg>
     <div style="font-size:12px;color:var(--muted);">Tahlil qilinmoqda...</div>
   </div>`;
@@ -408,7 +408,7 @@ function renderCallView() {
   <div class="page">
     <h1>Qo'ng'iroq tahlili</h1>
     <p class="desc">Qo'ng'iroq matnini yoki audio faylini yuklang — AI skript bo'yicha solishtirib, 6 mezon bo'yicha baholaydi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
 
     <div class="script-note">
       Skript bosqichlari (admin tomonidan belgilangan):
@@ -475,7 +475,7 @@ function renderResult(r) {
       <div class="title">Skript bo'yicha bosqichlar</div>
       ${(r.steps||[]).map(s => `
         <div class="step-line">
-          <span style="color:${s.completed?'#4C7A5E':'#B5483F'}">${s.completed?"✔":"✕"}</span>
+          <span style="color:${s.completed?'#2F6B4A':'#8B2E2E'}">${s.completed?"✔":"✕"}</span>
           <div><div>${esc(s.step)}</div>${s.note?`<div style="font-size:12px;color:#8A8371;">${esc(s.note)}</div>`:""}</div>
         </div>`).join("")}
     </div>
@@ -484,7 +484,7 @@ function renderResult(r) {
     <div class="result-card">
       <div class="title">Aniqlangan xatolar</div>
       ${r.issues.map(iss => {
-        const c = iss.severity==="yuqori"?"#B5483F":iss.severity==="o'rta"?"#C08A28":"#9AA3BD";
+        const c = iss.severity==="yuqori"?"#8B2E2E":iss.severity==="o'rta"?"#C6992E":"#9AA3BD";
         return `<div class="issue" style="border-color:${c}">
           <div class="sev" style="color:${c}">⚠ ${esc(iss.severity||"")} darajali</div>
           <div class="quote">"${esc(iss.quote||"")}"</div>
@@ -575,7 +575,7 @@ function renderChatView() {
         <p class="desc">Operator savol beradi, AI mahsulot ma'lumoti asosida javob beradi — <b>${esc(state.product?.name || "")}</b>.</p>
       </div>
     </div>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
     <div class="messages" id="messages">
       ${state.messages.length === 0 ? `<div style="color:#8A8371;font-size:14px;">Masalan: "Bu mahsulotning narxi qancha va nima uchun boshqalardan farq qiladi?"</div>` : ""}
       ${state.messages.map(m => `<div class="msg ${m.role==='user'?'user':'ai'}">${esc(m.text)}</div>`).join("")}
@@ -630,7 +630,7 @@ function renderScriptView() {
   <div class="page">
     <h1>Skript sozlamalari</h1>
     <p class="desc">Qo'ng'iroq tahlilida AI shu bosqichlar bilan solishtiradi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
     <div style="max-width:560px;margin-top:20px;">
       <div id="stepsList">
         ${state.scriptSteps.map((s,i)=>`<div class="step-row"><span>${i+1}. ${esc(s)}</span><button data-i="${i}" class="rmStep">✕</button></div>`).join("")}
@@ -677,7 +677,7 @@ async function loadAndRenderUsers() {
   <div class="page">
     <h1>Foydalanuvchilar</h1>
     <p class="desc">Operatorlar va administratorlarni boshqaring.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
     <table>
       <tr><th>Ism</th><th>Login</th><th>Rol</th><th>Holat</th><th></th></tr>
       ${state.adminUsers.map(u => `
@@ -791,7 +791,7 @@ async function loadAndRenderAdminHistory() {
   <div class="page">
     <h1>Barcha tarix</h1>
     <p class="desc">Barcha operatorlarning barcha tahlillari.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
+    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
     <div id="allHistoryList">
       ${state.adminHistory.length === 0
         ? `<div class="empty">Hozircha tahlil yo'q.</div>`
@@ -799,7 +799,7 @@ async function loadAndRenderAdminHistory() {
           <div class="history-item" data-id="${h.id}">
             <div><div class="t">${esc(h.full_name)} — ${esc(h.title || "Qo'ng'iroq")}</div><div class="tm">${fmtDate(h.created_at)}</div></div>
             <div>
-              <span style="color:#4C7A5E;margin-right:14px;">${h.script_completion}% skript</span>
+              <span style="color:#2F6B4A;margin-right:14px;">${h.script_completion}% skript</span>
               <span style="color:${scoreColor(h.honesty_score)}">${h.honesty_score} halollik</span>
             </div>
           </div>`).join("")}
