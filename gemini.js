@@ -20,6 +20,9 @@ async function callGeminiRaw(systemText, parts) {
   });
   const data = await res.json();
   if (!res.ok) {
+    if (res.status === 429) {
+      throw new Error("AI xizmatining bepul limiti tugadi. Bir necha soniyadan keyin qayta urinib ko'ring, yoki Google AI Studio'da billing yoqing.");
+    }
     const msg = data.error?.message || `Gemini xatosi (${res.status})`;
     throw new Error(msg);
   }
@@ -110,7 +113,7 @@ async function analyzeTranscript(scriptSteps, product, transcript) {
 async function analyzeAudio(scriptSteps, product, audioBuffer, mimeType) {
   const system = buildAnalysisSystem(scriptSteps, product) + `
 
-Senga qo'shimcha ravishda audio yozuvning o'zi beriladi. Avval uni diqqat bilan tingla, so'ng yuqoridagi JSON formatda tahlil qil. JSON ichiga yana "transcript" maydonini ham qo'sh (audio matnining qisqartirilgan yozuvi).`;
+Senga qo'shimcha ravishda audio yozuvning o'zi beriladi. Avval uni diqqat bilan tingla, so'ng yuqoridagi JSON formatda tahlil qil. Dialogni so'zma-so'z qayta yozib chiqarma — faqat o'zingning tahlil xulosangni ber.`;
   const base64Audio = audioBuffer.toString("base64");
   const raw = await callGeminiRaw(system, [
     { inline_data: { mime_type: mimeType, data: base64Audio } },

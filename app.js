@@ -143,7 +143,6 @@ function navItemsFor(role) {
     { id: "call", label: "Qo'ng'iroq tahlili", icon: "📞" },
   ];
   const adminOnly = [
-    { id: "product", label: "Mahsulot boshqaruvi", icon: "🏷️" },
     { id: "script", label: "Skript sozlamalari", icon: "📋" },
     { id: "users", label: "Foydalanuvchilar", icon: "👥" },
     { id: "adminHistory", label: "Barcha tarix", icon: "🗂️" },
@@ -170,6 +169,7 @@ function renderShell() {
       <div class="foot">
         <div class="who">${esc(state.user.full_name || state.user.username)}</div>
         <div class="role">${state.user.role === "admin" ? "Administrator" : "Operator"}</div>
+        <button id="changePwBtn" style="margin-top:6px;">🔒 Parolni almashtirish</button>
         <button id="logoutBtn">Chiqish</button>
       </div>
     </div>
@@ -182,6 +182,53 @@ function attachShellHandlers() {
     b.onclick = () => { state.view = b.dataset.view; state.result = null; render(); };
   });
   document.getElementById("logoutBtn").onclick = logout;
+  document.getElementById("changePwBtn").onclick = openPasswordModal;
+}
+
+/* ============================================================
+   O'Z PAROLINI ALMASHTIRISH (modal)
+   ============================================================ */
+function openPasswordModal() {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.id = "pwOverlay";
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h2 class="serif">Parolni almashtirish</h2>
+      <div class="sub">Xavfsizlik uchun joriy parolingizni ham kiriting.</div>
+      <label>Joriy parol</label>
+      <input type="password" id="pw_current" />
+      <label>Yangi parol</label>
+      <input type="password" id="pw_new" />
+      <label>Yangi parolni takrorlang</label>
+      <input type="password" id="pw_confirm" />
+      <div class="modal-actions">
+        <button class="btn-outline" id="pw_cancel">Bekor qilish</button>
+        <button class="btn-primary" id="pw_save">Saqlash</button>
+      </div>
+      <div class="modal-msg" id="pw_msg"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  document.getElementById("pw_cancel").onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  document.getElementById("pw_save").onclick = async () => {
+    const current = document.getElementById("pw_current").value;
+    const next = document.getElementById("pw_new").value;
+    const confirm = document.getElementById("pw_confirm").value;
+    const msg = document.getElementById("pw_msg");
+    if (!next || next.length < 4) { msg.textContent = "Yangi parol kamida 4 belgi bo'lsin"; msg.style.color = "var(--danger)"; return; }
+    if (next !== confirm) { msg.textContent = "Parollar bir xil emas"; msg.style.color = "var(--danger)"; return; }
+    msg.textContent = "Saqlanmoqda..."; msg.style.color = "var(--muted)";
+    try {
+      await api("PATCH", "/api/me/password", { currentPassword: current, newPassword: next });
+      msg.textContent = "✔ Parol almashtirildi"; msg.style.color = "var(--success)";
+      setTimeout(() => overlay.remove(), 900);
+    } catch (e) {
+      msg.textContent = e.message; msg.style.color = "var(--danger)";
+    }
+  };
 }
 
 /* ============================================================
@@ -194,7 +241,6 @@ async function renderView() {
     if (state.view === "dashboard") await loadAndRenderDashboard();
     else if (state.view === "chat") await loadAndRenderChat();
     else if (state.view === "call") await loadAndRenderCall();
-    else if (state.view === "product") await loadAndRenderProduct();
     else if (state.view === "script") await loadAndRenderScript();
     else if (state.view === "users") await loadAndRenderUsers();
     else if (state.view === "adminHistory") await loadAndRenderAdminHistory();
@@ -323,6 +369,39 @@ async function loadAndRenderCall() {
   renderCallView();
 }
 
+function progressRingSVG(pct) {
+  const r = 30, c = 2 * Math.PI * r;
+  const offset = c - (pct / 100) * c;
+  return `
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 0;">
+    <svg width="76" height="76" viewBox="0 0 76 76">
+      <circle cx="38" cy="38" r="${r}" stroke="#EAE4D3" stroke-width="7" fill="none"/>
+      <circle cx="38" cy="38" r="${r}" stroke="#C08A28" stroke-width="7" fill="none"
+        stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
+        transform="rotate(-90 38 38)" style="transition:stroke-dashoffset .3s linear"/>
+      <text x="38" y="43" text-anchor="middle" font-size="15" font-weight="700" fill="#14213D" font-family="Fraunces,serif">${pct}%</text>
+    </svg>
+    <div style="font-size:12px;color:var(--muted);">Tahlil qilinmoqda...</div>
+  </div>`;
+}
+
+function startFakeProgress() {
+  state.analyzeProgress = 3;
+  if (state._progressTimer) clearInterval(state._progressTimer);
+  state._progressTimer = setInterval(() => {
+    // Sekinlashib boradi, 92% dan oshmaydi — haqiqiy tugash bilan almashtiriladi
+    const step = state.analyzeProgress < 50 ? 6 : state.analyzeProgress < 80 ? 2 : 0.5;
+    state.analyzeProgress = Math.min(92, state.analyzeProgress + step);
+    const holder = document.getElementById("progressHolder");
+    if (holder) holder.innerHTML = progressRingSVG(Math.round(state.analyzeProgress));
+  }, 350);
+}
+function stopFakeProgress() {
+  if (state._progressTimer) clearInterval(state._progressTimer);
+  state._progressTimer = null;
+  state.analyzeProgress = 0;
+}
+
 function renderCallView() {
   const main = document.getElementById("main");
   main.innerHTML = `
@@ -351,10 +430,13 @@ function renderCallView() {
               ? `<div class="audio-picked">🎧 ${esc(state.audioFile.name)} <button id="removeAudio">✕</button></div>`
               : `<div class="audio-hint">Audio faylni tanlash uchun bosing<br><span>mp3, wav, m4a, ogg — 20MB gacha</span></div>`}
           </div>
+          ${state.audioFile ? `<audio controls src="${state.audioUrl}" style="width:100%;margin-top:10px;"></audio>` : ""}
         `}
-        <button class="btn-primary btn-analyze" id="analyzeBtn" ${state.loadingAnalyze?"disabled":""}>
-          ${state.loadingAnalyze?"Tahlil qilinmoqda...":"📞 Tahlil qilish"}
-        </button>
+        <div id="progressHolder">
+          ${state.loadingAnalyze
+            ? progressRingSVG(Math.round(state.analyzeProgress || 0))
+            : `<button class="btn-primary btn-analyze" id="analyzeBtn">📞 Tahlil qilish</button>`}
+        </div>
         <div id="analyzeErr" class="err"></div>
       </div>
       <div id="resultCol">
@@ -388,12 +470,6 @@ function renderResult(r) {
       <div class="title">Xulosa</div>
       <p style="font-size:14px;color:#4B4536;margin:0;">${esc(r.summary || "")}</p>
     </div>
-
-    ${r.transcript ? `
-    <div class="result-card">
-      <div class="title">Audio matni (transkript)</div>
-      <p style="font-size:13px;color:#4B4536;white-space:pre-wrap;margin:0;">${esc(r.transcript)}</p>
-    </div>` : ""}
 
     <div class="result-card">
       <div class="title">Skript bo'yicha bosqichlar</div>
@@ -431,31 +507,42 @@ function attachCallHandlers() {
   if (audioDrop && audioFileInput) {
     audioDrop.onclick = (e) => { if (e.target.id !== "removeAudio") audioFileInput.click(); };
     audioFileInput.onchange = () => {
-      if (audioFileInput.files[0]) { state.audioFile = audioFileInput.files[0]; renderCallView(); }
+      if (audioFileInput.files[0]) {
+        if (state.audioUrl) URL.revokeObjectURL(state.audioUrl);
+        state.audioFile = audioFileInput.files[0];
+        state.audioUrl = URL.createObjectURL(state.audioFile);
+        renderCallView();
+      }
     };
   }
   const removeAudio = document.getElementById("removeAudio");
-  if (removeAudio) removeAudio.onclick = (e) => { e.stopPropagation(); state.audioFile = null; renderCallView(); };
+  if (removeAudio) removeAudio.onclick = (e) => {
+    e.stopPropagation();
+    if (state.audioUrl) URL.revokeObjectURL(state.audioUrl);
+    state.audioFile = null; state.audioUrl = null;
+    renderCallView();
+  };
 
   const transcriptEl = document.getElementById("transcript");
   const analyzeBtn = document.getElementById("analyzeBtn");
+  if (!analyzeBtn) return;
   analyzeBtn.onclick = async () => {
     const errEl = document.getElementById("analyzeErr");
     errEl.textContent = "";
     if (state.inputMode === "text") {
       const t = transcriptEl.value.trim();
       if (!t || state.loadingAnalyze) return;
-      state.loadingAnalyze = true; state.result = null; renderCallView();
+      state.loadingAnalyze = true; state.result = null; renderCallView(); startFakeProgress();
       try {
         const r = await api("POST", "/api/analyze", { transcript: t });
         state.result = r;
       } catch (e) {
         document.getElementById("analyzeErr").textContent = e.message;
       }
-      state.loadingAnalyze = false; renderCallView();
+      stopFakeProgress(); state.loadingAnalyze = false; renderCallView();
     } else {
       if (!state.audioFile || state.loadingAnalyze) return;
-      state.loadingAnalyze = true; state.result = null; renderCallView();
+      state.loadingAnalyze = true; state.result = null; renderCallView(); startFakeProgress();
       try {
         const form = new FormData();
         form.append("audio", state.audioFile);
@@ -464,7 +551,7 @@ function attachCallHandlers() {
       } catch (e) {
         document.getElementById("analyzeErr").textContent = e.message;
       }
-      state.loadingAnalyze = false; renderCallView();
+      stopFakeProgress(); state.loadingAnalyze = false; renderCallView();
     }
   };
 }
@@ -527,52 +614,6 @@ function renderChatView() {
   chatInput.focus();
 }
 
-/* ============================================================
-   ADMIN: PRODUCT MANAGEMENT
-   ============================================================ */
-async function loadAndRenderProduct() {
-  const { product } = await api("GET", "/api/admin/product");
-  state.product = product;
-  const main = document.getElementById("main");
-  const p = state.product || {};
-  main.innerHTML = `
-  <div class="page">
-    <h1>Mahsulot boshqaruvi</h1>
-    <p class="desc">Bu ma'lumot Mahsulot AI chatida va qo'ng'iroq tahlilida "to'g'ri ma'lumot" sifatida ishlatiladi.</p>
-    <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C08A28")}</svg>
-    <div class="form-grid">
-      <div><label>Mahsulot nomi</label><input type="text" id="p_name" value="${esc(p.name)}" /></div>
-      <div><label>Narxi</label><input type="text" id="p_price" value="${esc(p.price)}" /></div>
-      <div><label>Turi / kategoriyasi</label><input type="text" id="p_category" value="${esc(p.category)}" /></div>
-      <div><label>Foydalari</label><textarea id="p_benefits" rows="3">${esc(p.benefits)}</textarea></div>
-      <div><label>Tarkibi</label><textarea id="p_ingredients" rows="2">${esc(p.ingredients)}</textarea></div>
-      <div><label>Eslatmalar</label><textarea id="p_notes" rows="2">${esc(p.notes)}</textarea></div>
-      <button class="btn-primary" id="saveProduct" style="width:fit-content;">Saqlash</button>
-      <div id="productMsg" style="font-size:13px;"></div>
-    </div>
-  </div>`;
-
-  document.getElementById("saveProduct").onclick = async () => {
-    const msg = document.getElementById("productMsg");
-    msg.textContent = "Saqlanmoqda...";
-    msg.style.color = "var(--muted)";
-    try {
-      await api("PUT", "/api/admin/product", {
-        name: document.getElementById("p_name").value,
-        price: document.getElementById("p_price").value,
-        category: document.getElementById("p_category").value,
-        benefits: document.getElementById("p_benefits").value,
-        ingredients: document.getElementById("p_ingredients").value,
-        notes: document.getElementById("p_notes").value,
-      });
-      msg.textContent = "✔ Saqlandi";
-      msg.style.color = "var(--success)";
-    } catch (e) {
-      msg.textContent = "Xatolik: " + e.message;
-      msg.style.color = "var(--danger)";
-    }
-  };
-}
 
 /* ============================================================
    ADMIN: SCRIPT MANAGEMENT
@@ -646,6 +687,7 @@ async function loadAndRenderUsers() {
           <td><span class="pill ${u.role}">${u.role==='admin'?'Administrator':'Operator'}</span></td>
           <td>${u.active ? '<span class="pill operator">Faol</span>' : '<span class="pill inactive">O\'chirilgan</span>'}</td>
           <td>
+            <button class="btn-outline resetPw" data-id="${u.id}" data-name="${esc(u.full_name)}">Parol</button>
             <button class="btn-outline toggleActive" data-id="${u.id}" data-active="${u.active}">${u.active?'O\'chirish':'Yoqish'}</button>
             <button class="btn-danger delUser" data-id="${u.id}">O'chirish</button>
           </td>
@@ -665,6 +707,9 @@ async function loadAndRenderUsers() {
     <div id="usersMsg" style="font-size:13px;margin-top:8px;"></div>
   </div>`;
 
+  document.querySelectorAll(".resetPw").forEach(btn => {
+    btn.onclick = () => openResetPasswordModal(btn.dataset.id, btn.dataset.name);
+  });
   document.querySelectorAll(".toggleActive").forEach(btn => {
     btn.onclick = async () => {
       await api("PATCH", `/api/admin/users/${btn.dataset.id}/active`, { active: btn.dataset.active !== "1" });
@@ -691,6 +736,46 @@ async function loadAndRenderUsers() {
     } catch (e) {
       msg.textContent = "Xatolik: " + e.message;
       msg.style.color = "var(--danger)";
+    }
+  };
+}
+
+/* ============================================================
+   ADMIN: FOYDALANUVCHI PAROLINI ALMASHTIRISH (modal)
+   ============================================================ */
+function openResetPasswordModal(userId, userName) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h2 class="serif">Parolni almashtirish</h2>
+      <div class="sub">${esc(userName)} uchun yangi parol o'rnatiladi.</div>
+      <label>Yangi parol</label>
+      <input type="password" id="rp_new" />
+      <label>Yangi parolni takrorlang</label>
+      <input type="password" id="rp_confirm" />
+      <div class="modal-actions">
+        <button class="btn-outline" id="rp_cancel">Bekor qilish</button>
+        <button class="btn-primary" id="rp_save">Saqlash</button>
+      </div>
+      <div class="modal-msg" id="rp_msg"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById("rp_cancel").onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  document.getElementById("rp_save").onclick = async () => {
+    const next = document.getElementById("rp_new").value;
+    const confirm = document.getElementById("rp_confirm").value;
+    const msg = document.getElementById("rp_msg");
+    if (!next || next.length < 4) { msg.textContent = "Parol kamida 4 belgi bo'lsin"; msg.style.color = "var(--danger)"; return; }
+    if (next !== confirm) { msg.textContent = "Parollar bir xil emas"; msg.style.color = "var(--danger)"; return; }
+    msg.textContent = "Saqlanmoqda..."; msg.style.color = "var(--muted)";
+    try {
+      await api("PATCH", `/api/admin/users/${userId}/password`, { password: next });
+      msg.textContent = "✔ Parol almashtirildi"; msg.style.color = "var(--success)";
+      setTimeout(() => overlay.remove(), 900);
+    } catch (e) {
+      msg.textContent = e.message; msg.style.color = "var(--danger)";
     }
   };
 }
