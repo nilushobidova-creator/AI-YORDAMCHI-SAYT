@@ -1,0 +1,21 @@
+{
+  "name": "sotuv-ai-yordamchi",
+  "version": "2.0.0",
+  "description": "Sotuv menejeri uchun AI yordamchi va qo'ng'iroq tahlili — login, admin panel va SQLite baza bilan",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "better-sqlite3": "^11.3.0",
+    "bcryptjs": "^2.4.3",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.4.0"
+  }
+}
