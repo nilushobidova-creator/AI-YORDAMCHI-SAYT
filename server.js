@@ -1,209 +1,285 @@
-import express from 'express';
-import multer from 'multer';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import fs from 'fs';
+// server.js — faqat yo'nalishlar (routes) va ularni bir-biriga bog'lash.
+// Baza mantig'i -> db.js, AI mantig'i -> gemini.js, himoya -> middleware.js
 
-dotenv.config();
+const express = require("express");
+const path = require("path");
+const multer = require("multer");
+const session = require("express-session");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const bcrypt = require("bcryptjs");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const store = require("./db");
+const ai = require("./gemini");
+const { requireAuth, requireAdmin, asyncHandler, errorHandler } = require("./middleware");
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.set("trust proxy", 1); // Railway/Vercel kabi proxy orqasida to'g'ri IP va secure cookie uchun
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ---------- Xavfsizlik ----------
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // oddiy inline <style>/<script> ishlatilgani uchun o'chirilgan
+  })
+);
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: "Juda ko'p urinish. 15 daqiqadan keyin qayta urinib ko'ring." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  message: { error: "So'rovlar juda tez yuborildi. Biroz kuting." },
+});
+
+app.use(express.json({ limit: "2mb" }));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "sotuvai-maxfiy-kalit-almashtiring",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 kun
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    },
+  })
+);
+app.use("/api/", apiLimiter);
 app.use(express.static(__dirname));
 
-// Multer sozlamalari
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = join(__dirname, 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'audio-' + uniqueSuffix + '-' + file.originalname);
-  }
-});
-
 const upload = multer({
-  storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
-  fileFilter: (req, file, cb) => {
-    const allowedMimes = [
-      'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg',
-      'audio/webm', 'audio/m4a', 'audio/mp4', 'audio/x-m4a',
-      'audio/aac', 'audio/flac'
-    ];
-    if (allowedMimes.includes(file.mimetype) || file.mimetype.startsWith('audio/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Faqat audio fayllar qabul qilinadi!'), false);
-    }
-  }
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'index.html'));
-});
+// ================= AUTH =================
 
-app.post('/api/analyze', upload.single('audio'), async (req, res) => {
-  let uploadedFilePath = null;
-
-  try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY environment variable topilmadi.');
+app.post(
+  "/api/login",
+  loginLimiter,
+  asyncHandler(async (req, res) => {
+    const { username, password } = req.body || {};
+    if (!username || !password) {
+      return res.status(400).json({ error: "Login va parolni kiriting" });
     }
-    if (!req.file) {
-      return res.status(400).json({ error: 'Audio fayl yuklanmadi.' });
+    const user = store.findUserByUsername(username.trim());
+    if (!user || !user.active || !bcrypt.compareSync(password, user.password_hash)) {
+      return res.status(401).json({ error: "Login yoki parol xato" });
     }
-
-    uploadedFilePath = req.file.path;
-    const checklistItems = req.body.checklist ? JSON.parse(req.body.checklist) : [];
-
-    console.log('📁 Fayl qabul qilindi:', req.file.originalname);
-
-    // ✅ DINAMIK IMPORT: Eski versiyalarda server crash bo'lmasligi uchun
-    let GoogleAIFileManager;
-    try {
-      const module = await import('@google/generative-ai');
-      GoogleAIFileManager = module.GoogleAIFileManager;
-      if (!GoogleAIFileManager) {
-        throw new Error('GoogleAIFileManager klassi mavjud emas. @google/generative-ai paketini yangilang.');
-      }
-    } catch (importErr) {
-      throw new Error(`Import xatosi: ${importErr.message}`);
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
-
-    console.log('⬆️ Gemini serveriga audio yuklanyapti...');
-    const uploadResult = await fileManager.uploadFile(uploadedFilePath, {
-      mimeType: req.file.mimetype,
-      displayName: req.file.originalname,
-    });
-
-    let file = await fileManager.getFile(uploadResult.file.name);
-    console.log('⏳ Fayl holati:', file.state);
-
-    while (file.state === 'PROCESSING') {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      file = await fileManager.getFile(uploadResult.file.name);
-      console.log('⏳ Hali ishlov berilmoqda... Holat:', file.state);
-    }
-
-    if (file.state === 'FAILED') {
-      throw new Error('Gemini serveri faylni qayta ishlay olmadi.');
-    }
-
-    console.log('🎯 Fayl tayyor. AI tahlil boshlanmoqda...');
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-    const checklistString = checklistItems.length > 0
-      ? checklistItems.map((item, idx) => `${idx + 1}. ${item}`).join('\n')
-      : 'Standart sifat ko\'rsatkichlari';
-
-    const systemPrompt = `
-Siz professional sifat nazorati bo'yicha mutaxassiz. Qo'ng'iroq audio yozuvini chuqur tahlil qiling.
-
-MAHSULOT MA'LUMOTLARI:
-Nomi: Abihayat
-Tarkibi: zaytun, kekkik, dolchin
-Narxi: 600,000 so'm (bitta quti uchun)
-AKSIYA: 2+2 bonus taklif — 2 ta sotib oling, 2 ta bepul oling (jami 4 ta quti). Maxsulot soni 1 taga kamaysa narx ham 200,000 soʻmga tushadi.
-
-TEKSHIRISH MEZONLARI:
-${checklistString}
-
-VAZIFA:
-Audio yozuvni eshitib, menejer qanchalik professional ishladi va mezonlarga javob berdimi baholang.
-
-MAJBURIY JAVOB FORMATI - FAQAT TO'G'RI JSON:
-{
- "score": 85,
- "summary": "Qisqa umumiy xulosa",
- "checkpoints": [
-   { "name": "Mezon nomi", "status": "passed/failed", "time": "MM:SS", "comment": "Izoh" }
- ],
- "critical_errors": [
-   { "time": "MM:SS", "description": "Jiddiy xato tavsifi" }
- ]
-}
-
-MUHIM:
-- "score" 0-100 oralig'ida
-- "status" faqat "passed" yoki "failed"
-- Vaqt formati: "MM:SS"
-- Faqat valid JSON qaytaring, boshqa matn yo'q
-`;
-
-    const result = await model.generateContent([
-      { fileData: { mimeType: file.mimeType, fileUri: file.uri } },
-      { text: systemPrompt }
-    ]);
-
-    let analysisText = result.response.text();
-    console.log('🤖 AI javob olindi:', analysisText.substring(0, 150) + '...');
-
-    // Markdown kod bloklarini tozalash
-    analysisText = analysisText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-
-    let analysisJson;
-    try {
-      analysisJson = JSON.parse(analysisText);
-    } catch (parseError) {
-      console.error('❌ JSON parse xatosi:', parseError.message);
-      analysisJson = {
-        score: 50,
-        summary: 'AI javobini qayta ishlashda xatolik. Iltimos qaytadan urinib ko\'ring.',
-        checkpoints: checklistItems.map(item => ({
-          name: item, status: 'failed', time: '00:00', comment: 'Tahlil noto\'liq'
-        })),
-        critical_errors: [{ time: '00:00', description: 'Texnik xatolik: AI javobi noto\'g\'ri formatda' }]
+    req.session.regenerate((err) => {
+      if (err) return res.status(500).json({ error: "Sessiya xatosi" });
+      req.session.user = {
+        id: user.id,
+        username: user.username,
+        full_name: user.full_name,
+        role: user.role,
       };
-    }
-
-    console.log('✅ Tahlil yakunlandi. Ball:', analysisJson.score);
-    res.json(analysisJson);
-
-  } catch (error) {
-    console.error('❌ Xatolik:', error.message);
-    res.status(500).json({
-      error: 'Tahlil paytida xatolik yuz berdi',
-      message: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      res.json({ user: req.session.user });
     });
-  } finally {
-    // ✅ Har doim vaqtinchalik faylni o'chirish
-    if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
-      try {
-        fs.unlinkSync(uploadedFilePath);
-        console.log('🗑️ Vaqtinchalik fayl o\'chirildi');
-      } catch (cleanupError) {
-        console.error('Faylni o\'chirishda xatolik:', cleanupError.message);
-      }
+  })
+);
+
+app.post("/api/logout", (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
+app.get("/api/me", (req, res) => {
+  res.json({ user: req.session.user || null });
+});
+
+// ================= MAHSULOT AI (CHAT) =================
+
+app.post(
+  "/api/chat",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { message } = req.body || {};
+    if (!message || !message.trim()) return res.status(400).json({ error: "Xabar bo'sh bo'lishi mumkin emas" });
+
+    const product = store.getProduct();
+    const history = store.getChatHistory(req.session.user.id, 12);
+    const reply = await ai.chatReply(product, history, message.trim());
+
+    store.saveChatMessage(req.session.user.id, "user", message.trim());
+    store.saveChatMessage(req.session.user.id, "assistant", reply);
+
+    res.json({ reply });
+  })
+);
+
+app.get(
+  "/api/chat/history",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    res.json({ messages: store.getChatHistory(req.session.user.id, 50) });
+  })
+);
+
+// ================= QO'NG'IROQ TAHLILI =================
+
+app.post(
+  "/api/analyze",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { transcript } = req.body || {};
+    if (!transcript || !transcript.trim()) {
+      return res.status(400).json({ error: "Transkript bo'sh bo'lishi mumkin emas" });
     }
+    const scriptSteps = store.getScriptSteps();
+    const product = store.getProduct();
+    const analysis = await ai.analyzeTranscript(scriptSteps, product, transcript.trim());
+
+    const id = store.saveCallAnalysis(req.session.user.id, {
+      source: "text",
+      title: transcript.trim().slice(0, 60),
+      transcript: transcript.trim(),
+      analysis,
+    });
+
+    res.json({ id, ...analysis });
+  })
+);
+
+app.post(
+  "/api/analyze-audio",
+  requireAuth,
+  upload.single("audio"),
+  asyncHandler(async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "Audio fayl topilmadi" });
+    const scriptSteps = store.getScriptSteps();
+    const product = store.getProduct();
+    const analysis = await ai.analyzeAudio(scriptSteps, product, req.file.buffer, req.file.mimetype || "audio/mpeg");
+
+    const id = store.saveCallAnalysis(req.session.user.id, {
+      source: "audio",
+      title: "🎙 " + (req.file.originalname || "audio"),
+      transcript: analysis.transcript,
+      analysis,
+    });
+
+    res.json({ id, ...analysis });
+  })
+);
+
+app.get("/api/history", requireAuth, (req, res) => {
+  res.json({ history: store.getUserHistory(req.session.user.id, 50) });
+});
+
+app.get("/api/history/:id", requireAuth, (req, res) => {
+  const call = store.getCallById(+req.params.id);
+  if (!call || (call.user_id !== req.session.user.id && req.session.user.role !== "admin")) {
+    return res.status(404).json({ error: "Topilmadi" });
   }
+  res.json({ call });
 });
 
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    geminiConfigured: !!process.env.GEMINI_API_KEY
-  });
+// ================= DASHBOARD STATISTIKASI =================
+
+app.get("/api/stats", requireAuth, (req, res) => {
+  const userId = req.session.user.role === "admin" && req.query.all === "1" ? null : req.session.user.id;
+  res.json(store.getStats(userId));
 });
 
-app.listen(PORT, () => {
-  console.log('🚀 Server ishga tushdi');
-  console.log(`🌐 URL: http://localhost:${PORT}`);
-  console.log(`🔑 Gemini API: ${process.env.GEMINI_API_KEY ? '✅ Configured' : '❌ MISSING'}`);
-  console.log('⏰ Vaqt:', new Date().toLocaleString('uz-UZ'));
+// ================= OPERATOR UCHUN O'QISH (faqat ko'rish) =================
+
+app.get("/api/script", requireAuth, (req, res) => {
+  res.json({ scriptSteps: store.getScriptSteps() });
 });
+
+app.get("/api/product", requireAuth, (req, res) => {
+  res.json({ product: store.getProduct() });
+});
+
+// ================= ADMIN: FOYDALANUVCHILAR =================
+
+app.get("/api/admin/users", requireAdmin, (req, res) => {
+  res.json({ users: store.listUsers() });
+});
+
+app.post(
+  "/api/admin/users",
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const { username, password, full_name, role } = req.body || {};
+    if (!username || !password || password.length < 4) {
+      return res.status(400).json({ error: "Login va kamida 4 belgili parol kiriting" });
+    }
+    if (store.findUserByUsername(username.trim())) {
+      return res.status(409).json({ error: "Bu login band" });
+    }
+    const id = store.createUser({ username: username.trim(), password, full_name, role });
+    res.json({ ok: true, id });
+  })
+);
+
+app.patch("/api/admin/users/:id/password", requireAdmin, (req, res) => {
+  const { password } = req.body || {};
+  if (!password || password.length < 4) return res.status(400).json({ error: "Parol juda qisqa" });
+  store.updateUserPassword(+req.params.id, password);
+  res.json({ ok: true });
+});
+
+app.patch("/api/admin/users/:id/active", requireAdmin, (req, res) => {
+  store.setUserActive(+req.params.id, !!req.body?.active);
+  res.json({ ok: true });
+});
+
+app.delete("/api/admin/users/:id", requireAdmin, (req, res) => {
+  if (+req.params.id === req.session.user.id) {
+    return res.status(400).json({ error: "O'zingizni o'chira olmaysiz" });
+  }
+  store.deleteUser(+req.params.id);
+  res.json({ ok: true });
+});
+
+// ================= ADMIN: MAHSULOT BOSHQARUVI =================
+
+app.get("/api/admin/product", requireAdmin, (req, res) => {
+  res.json({ product: store.getProduct() });
+});
+
+app.put("/api/admin/product", requireAdmin, (req, res) => {
+  const { name, price, category, benefits, ingredients, notes } = req.body || {};
+  if (!name || !name.trim()) return res.status(400).json({ error: "Mahsulot nomi shart" });
+  store.setProduct({ name, price, category, benefits, ingredients, notes });
+  res.json({ ok: true });
+});
+
+// ================= ADMIN: SKRIPT =================
+
+app.get("/api/admin/script", requireAdmin, (req, res) => {
+  res.json({ scriptSteps: store.getScriptSteps() });
+});
+
+app.put("/api/admin/script", requireAdmin, (req, res) => {
+  const { scriptSteps } = req.body || {};
+  if (!Array.isArray(scriptSteps) || scriptSteps.length === 0) {
+    return res.status(400).json({ error: "Kamida bitta bosqich kerak" });
+  }
+  store.setScriptSteps(scriptSteps.filter((s) => typeof s === "string" && s.trim()));
+  res.json({ ok: true });
+});
+
+// ================= ADMIN: BARCHA TARIX =================
+
+app.get("/api/admin/history", requireAdmin, (req, res) => {
+  res.json({ history: store.getAllHistory(200) });
+});
+
+// ================= Statik sahifa + xatoliklar =================
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`[SotuvAI] ${PORT}-portda ishlamoqda`));

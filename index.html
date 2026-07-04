@@ -1,732 +1,149 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abihayat Audio Tahlil Platformasi | AI Sales Coach</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        * {
-            font-family: 'Inter', sans-serif;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SotuvAI — Sotuv menejeri yordamchisi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#14213D; --ink-light:#1F2E52; --paper:#F6F3EC;
+    --gold:#C08A28; --gold-light:#E8C97A;
+    --success:#4C7A5E; --danger:#B5483F; --muted:#6B6558; --line:#EAE4D3;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Manrope',sans-serif;background:var(--paper);color:#242017;}
+  h1,h2,.serif{font-family:'Fraunces',serif;}
+  .app{display:flex;height:100vh;}
+  .sidebar{width:230px;flex-shrink:0;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;}
+  .sidebar .brand{padding:26px 22px 14px;}
+  .sidebar .brand .name{font-size:20px;font-weight:600;color:var(--paper);}
+  .sidebar .brand .sub{font-size:12px;color:#9AA3BD;margin-top:2px;}
+  .ikat{width:100%;height:8px;}
+  .nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:4px;overflow-y:auto;}
+  .nav .section-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#6E78A0;padding:14px 12px 4px;}
+  .nav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;background:none;color:#C7CCDB;font-size:14px;border-radius:6px;cursor:pointer;text-align:left;font-family:inherit;width:100%;}
+  .nav button:hover{background:#1B2A4A;color:var(--paper);}
+  .nav button.active{background:var(--ink-light);color:var(--gold-light);font-weight:600;}
+  .sidebar .foot{padding:14px 18px;font-size:12px;color:#C7CCDB;border-top:1px solid #25335A;}
+  .sidebar .foot .who{font-weight:600;color:var(--paper);}
+  .sidebar .foot .role{font-size:11px;color:#9AA3BD;}
+  .sidebar .foot button{margin-top:8px;width:100%;background:#25335A;color:#F6F3EC;border:none;border-radius:6px;padding:7px;font-size:12px;cursor:pointer;}
+  .sidebar .foot button:hover{background:#2E3F6B;}
+  .main{flex:1;overflow-y:auto;}
+  .page{padding:36px;max-width:1150px;}
+  .page h1{font-size:28px;color:var(--ink);margin:0;}
+  .page .desc{color:var(--muted);margin-top:6px;font-size:14px;}
+  .divider{width:150px;margin-top:14px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;}
+  .card .label{font-size:11px;color:#8A8371;text-transform:uppercase;letter-spacing:.04em;}
+  .card .value{font-family:'Fraunces',serif;font-size:26px;margin-top:8px;}
+  .empty{border:1px dashed var(--line);border-radius:10px;padding:28px;text-align:center;color:#8A8371;}
+  .empty a{color:var(--gold);cursor:pointer;text-decoration:underline;}
+  .history-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:11px 16px;margin-bottom:8px;font-size:13px;cursor:pointer;}
+  .history-item:hover{border-color:var(--gold);}
+  .history-item .t{font-weight:600;color:var(--ink);}
+  .history-item .tm{font-size:11px;color:#8A8371;}
+  .charts{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-top:26px;}
+  .chart-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;}
+  .chart-card .title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px;}
 
-        body {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
+  .btn-outline{font-size:13px;padding:7px 14px;border:1px solid #D8D1BE;border-radius:6px;background:#fff;cursor:pointer;color:var(--ink);}
+  .btn-outline:hover{background:#F0EBDD;}
+  .btn-primary{background:var(--ink);color:#fff;border:none;border-radius:6px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-primary:hover{background:var(--ink-light);}
+  .btn-primary:disabled{opacity:.5;cursor:default;}
+  .btn-danger{background:none;border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;}
+  textarea, input[type=text], input[type=password]{font-family:inherit;font-size:14px;border:1px solid #D8D1BE;border-radius:6px;background:#fff;padding:10px 12px;}
+  textarea:focus, input:focus{outline:none;box-shadow:0 0 0 2px var(--gold);}
 
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
+  .login-wrap{height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink);}
+  .login-card{background:var(--paper);border-radius:14px;padding:40px 36px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .login-card h1{font-size:24px;color:var(--ink);margin:0 0 4px;}
+  .login-card .sub{color:var(--muted);font-size:13px;margin-bottom:22px;}
+  .login-card label{font-size:12px;font-weight:600;color:var(--ink);display:block;margin-bottom:5px;margin-top:14px;}
+  .login-card input{width:100%;}
+  .login-card button{width:100%;margin-top:22px;}
+  .login-err{color:var(--danger);font-size:13px;margin-top:12px;min-height:16px;}
 
-        .glass-strong {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
+  .chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 60px);}
+  .chat-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .messages{flex:1;overflow-y:auto;margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+  .msg{max-width:70%;padding:10px 14px;border-radius:10px;font-size:14px;white-space:pre-wrap;}
+  .msg.user{align-self:flex-end;background:var(--ink);color:var(--paper);}
+  .msg.ai{align-self:flex-start;background:#fff;border:1px solid var(--line);}
+  .chat-input{display:flex;gap:8px;margin-top:14px;}
+  .chat-input input{flex:1;}
+  .btn-send{background:var(--ink);color:#fff;border:none;border-radius:6px;padding:0 18px;cursor:pointer;}
+  .btn-send:hover{background:var(--ink-light);}
+  .typing{color:#8A8371;font-size:13px;}
 
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:20px;}
+  .mode-toggle{display:flex;gap:8px;margin-bottom:10px;}
+  .mode-btn{flex:1;padding:8px;border:1px solid #D8D1BE;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;color:var(--ink);font-family:inherit;}
+  .mode-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .audio-drop{border:1px dashed #D8D1BE;border-radius:8px;padding:24px;text-align:center;cursor:pointer;background:#fff;}
+  .audio-drop:hover{background:#F0EBDD;}
+  .audio-hint{color:#8A8371;font-size:13px;}
+  .audio-hint span{font-size:11px;}
+  .audio-picked{font-size:14px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:10px;}
+  .audio-picked button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;}
+  .field-label{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px;}
+  textarea.transcript{width:100%;}
+  .btn-analyze{width:100%;margin-top:12px;}
+  .err{color:var(--danger);font-size:13px;margin-top:8px;}
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
+  .script-note{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:#4B4536;}
+  .script-note ol{margin:6px 0 0;padding-left:18px;}
 
-        .gradient-success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
+  .score-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;}
+  .score-item .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink);font-weight:600;margin-bottom:4px;}
+  .score-bar{height:8px;border-radius:4px;background:#EAE4D3;overflow:hidden;}
+  .score-bar > div{height:100%;border-radius:4px;transition:width .5s ease;}
 
-        .gradient-danger {
-            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        }
+  .result-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px;}
+  .result-card .title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px;}
+  .step-line{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin-bottom:8px;}
+  .issue{border-left:3px solid var(--gold);padding-left:12px;margin-bottom:16px;}
+  .issue .sev{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+  .issue .quote{font-style:italic;font-size:14px;margin-top:5px;color:#242017;}
+  .issue .row{font-size:13px;margin-top:5px;line-height:1.45;}
+  .issue .row b{color:var(--ink);}
 
-        .tab-button {
-            position: relative;
-            transition: all 0.3s ease;
-        }
+  .form-grid{display:grid;gap:12px;max-width:640px;margin-top:20px;}
+  .form-grid label{font-size:13px;font-weight:600;color:var(--ink);}
+  .form-grid textarea, .form-grid input{width:100%;}
+  table{width:100%;border-collapse:collapse;margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  th, td{text-align:left;padding:10px 14px;font-size:13px;border-bottom:1px solid var(--line);}
+  th{background:#F0EBDD;color:var(--ink);font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  .pill{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;}
+  .pill.admin{background:#E8C97A;color:var(--ink);}
+  .pill.operator{background:#DCE3F0;color:var(--ink);}
+  .pill.inactive{background:#F0D9D3;color:var(--danger);}
+  .add-user-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;}
+  .add-user-form input, .add-user-form select{flex:1;min-width:120px;}
 
-        .tab-button.active {
-            background: rgba(102, 126, 234, 0.2);
-            border-bottom: 3px solid #667eea;
-        }
+  .step-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:14px;margin-bottom:6px;}
+  .step-row button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;}
+  .add-step{display:flex;gap:8px;margin:10px 0 20px;}
+  .add-step input{flex:1;}
+  .add-step button{border:1px solid #D8D1BE;border-radius:6px;background:#fff;width:38px;cursor:pointer;}
 
-        .milestone-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            border-radius: 20px;
-            color: #a5b4fc;
-            font-size: 14px;
-            font-weight: 500;
-            margin: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .milestone-badge:hover {
-            background: rgba(102, 126, 234, 0.25);
-            transform: translateY(-2px);
-        }
-
-        .milestone-badge .remove-btn {
-            cursor: pointer;
-            color: #ef4444;
-            font-weight: bold;
-            font-size: 16px;
-            transition: transform 0.2s ease;
-        }
-
-        .milestone-badge .remove-btn:hover {
-            transform: scale(1.3);
-        }
-
-        .dropzone {
-            border: 2px dashed rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .dropzone:hover {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        .dropzone.dragover {
-            border-color: #38ef7d;
-            background: rgba(56, 239, 125, 0.1);
-            transform: scale(1.02);
-        }
-
-        .wave-loader {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .wave-bar {
-            width: 6px;
-            height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 4px;
-            animation: wave 1.2s ease-in-out infinite;
-        }
-
-        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
-        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
-        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
-        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
-        .wave-bar:nth-child(6) { animation-delay: 0.5s; }
-
-        @keyframes wave {
-            0%, 100% { height: 20px; opacity: 0.4; }
-            50% { height: 60px; opacity: 1; }
-        }
-
-        .progress-ring {
-            transform: rotate(-90deg);
-        }
-
-        .progress-ring-circle {
-            transition: stroke-dashoffset 0.8s ease;
-        }
-
-        .checkpoint-card {
-            transition: all 0.3s ease;
-        }
-
-        .checkpoint-card:hover {
-            transform: translateX(8px);
-        }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-passed {
-            background: rgba(56, 239, 125, 0.2);
-            color: #38ef7d;
-            border: 1px solid rgba(56, 239, 125, 0.4);
-        }
-
-        .status-failed {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.4);
-        }
-
-        .critical-error-card {
-            background: rgba(239, 68, 68, 0.1);
-            border-left: 4px solid #ef4444;
-            padding: 16px;
-            border-radius: 8px;
-            margin: 8px 0;
-        }
-
-        .pulse-animation {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 600;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .score-display {
-            font-size: 48px;
-            font-weight: 900;
-            text-align: center;
-        }
-
-        .timeline-marker {
-            background: #667eea;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            font-family: 'Courier New', monospace;
-        }
-
-        input[type="text"] {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]:focus {
-            border-color: #667eea;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .hidden {
-            display: none !important;
-        }
-    </style>
+  @media (max-width:800px){
+    .cols, .charts{grid-template-columns:1fr;}
+    .stats{grid-template-columns:1fr;}
+    .sidebar{width:70px;}
+    .sidebar .brand .name, .sidebar .brand .sub, .nav button span.lbl, .sidebar .foot .who, .sidebar .foot .role{display:none;}
+    .nav button{justify-content:center;}
+  }
+</style>
 </head>
-<body class="p-6">
-    <div class="max-w-7xl mx-auto">
-        <header class="text-center mb-8 fade-in">
-            <h1 class="text-5xl font-black text-white mb-2">
-                🎯 Abihayat Audio Tahlil Platformasi
-            </h1>
-            <p class="text-gray-300 text-lg">
-                AI-powered Sales Quality Assurance System | Powered by Google Gemini
-            </p>
-        </header>
-
-        <div class="glass rounded-2xl p-2 mb-6 fade-in">
-            <div class="flex gap-2">
-                <button 
-                    class="tab-button flex-1 py-4 px-6 text-white font-semibold rounded-xl active"
-                    onclick="switchTab('analysis')"
-                    id="tab-analysis"
-                >
-                    🎙️ Audio Tahlil Expert
-                </button>
-                <button 
-                    class="tab-button flex-1 py-4 px-6 text-white font-semibold rounded-xl"
-                    onclick="switchTab('coach')"
-                    id="tab-coach"
-                >
-                    🤖 AI Coach
-                </button>
-            </div>
-        </div>
-
-        <div id="view-analysis" class="view-container">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="glass-strong rounded-2xl p-8 fade-in">
-                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                            <span class="text-3xl">📋</span>
-                            Skript Mezoni Quruvchisi
-                        </h2>
-                        <p class="text-gray-300 mb-6">
-                            Qo'ng'iroq paytida tekshiriladigan mezonlarni dinamik qo'shing
-                        </p>
-                        
-                        <div class="flex gap-3 mb-6">
-                            <input 
-                                type="text" 
-                                id="milestone-input" 
-                                placeholder="Masalan: Salomlashish, Narxni tanishtirish..."
-                                class="flex-1"
-                                onkeypress="if(event.key === 'Enter') addMilestone()"
-                            >
-                            <button 
-                                onclick="addMilestone()" 
-                                class="btn-primary px-8"
-                            >
-                                ➕ Qo'shish
-                            </button>
-                        </div>
-
-                        <div id="milestone-container" class="min-h-[100px] glass rounded-xl p-4">
-                            <p class="text-gray-400 text-center" id="milestone-placeholder">
-                                Hozircha mezon qo'shilmagan. Yuqorida kiriting va ➕ bosing.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="glass-strong rounded-2xl p-8 fade-in">
-                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                            <span class="text-3xl">🎵</span>
-                            Audio Fayl Yuklash
-                        </h2>
-                        
-                        <div 
-                            id="dropzone" 
-                            class="dropzone rounded-xl p-12 text-center"
-                            onclick="document.getElementById('audio-input').click()"
-                            ondragover="handleDragOver(event)"
-                            ondragleave="handleDragLeave(event)"
-                            ondrop="handleDrop(event)"
-                        >
-                            <div id="dropzone-content">
-                                <svg class="w-20 h-20 mx-auto mb-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                </svg>
-                                <p class="text-white font-semibold text-lg mb-2">
-                                    Faylni shu yerga torting yoki bosing
-                                </p>
-                                <p class="text-gray-400 text-sm">
-                                    MP3, WAV, M4A, OGG va boshqa audio formatlar qo'llab-quvvatlanadi
-                                </p>
-                            </div>
-                            <div id="file-info" class="hidden">
-                                <div class="flex items-center justify-center gap-4">
-                                    <svg class="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <div class="text-left">
-                                        <p class="text-white font-semibold" id="file-name"></p>
-                                        <p class="text-gray-400 text-sm" id="file-size"></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <input 
-                            type="file" 
-                            id="audio-input" 
-                            accept="audio/*"
-                            class="hidden"
-                            onchange="handleFileSelect(event)"
-                        >
-
-                        <button 
-                            id="analyze-btn"
-                            onclick="analyzeAudio()"
-                            class="btn-primary w-full mt-6 text-lg py-4 hidden"
-                        >
-                            🚀 AI Tahlilni Boshlash
-                        </button>
-                    </div>
-
-                    <div id="loader-section" class="glass-strong rounded-2xl p-12 text-center hidden fade-in">
-                        <div class="wave-loader mb-6">
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-2">
-                            AI audio eshitmoqda va tahlil qilmoqda...
-                        </h3>
-                        <p class="text-gray-300">
-                            Iltimos kuting, bu bir necha soniya vaqt olishi mumkin
-                        </p>
-                        <div class="mt-4">
-                            <div class="inline-block px-6 py-2 glass rounded-full">
-                                <span class="text-indigo-300 pulse-animation">⚡ Google Gemini AI ishlamoqda</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="results-section" class="hidden fade-in space-y-6">
-                        <div class="glass-strong rounded-2xl p-8">
-                            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                                <span class="text-3xl">📊</span>
-                                Tahlil Natijalari
-                            </h2>
-
-                            <div class="mb-6 p-6 glass rounded-xl">
-                                <h3 class="text-lg font-semibold text-gray-300 mb-2">Umumiy Xulosa:</h3>
-                                <p class="text-white text-lg" id="summary-text"></p>
-                            </div>
-
-                            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                <span>✅</span>
-                                Skript Mezonlari Tekshiruvi
-                            </h3>
-                            <div id="checkpoints-container" class="space-y-3 mb-6"></div>
-
-                            <div id="critical-errors-section" class="hidden">
-                                <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
-                                    <span>⚠️</span>
-                                    Jiddiy Xatolar (Critical Errors)
-                                </h3>
-                                <div id="critical-errors-container" class="space-y-3"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    <div class="glass-strong rounded-2xl p-8 text-center sticky top-6 fade-in">
-                        <h3 class="text-lg font-semibold text-gray-300 mb-4">Menejer Balli</h3>
-                        <div class="relative inline-flex items-center justify-center mb-4">
-                            <svg class="progress-ring" width="160" height="160">
-                                <circle
-                                    class="text-gray-700"
-                                    stroke="currentColor"
-                                    stroke-width="12"
-                                    fill="transparent"
-                                    r="70"
-                                    cx="80"
-                                    cy="80"
-                                />
-                                <circle
-                                    id="progress-circle"
-                                    class="progress-ring-circle"
-                                    stroke="url(#gradient)"
-                                    stroke-width="12"
-                                    fill="transparent"
-                                    r="70"
-                                    cx="80"
-                                    cy="80"
-                                    stroke-dasharray="439.8"
-                                    stroke-dashoffset="439.8"
-                                    stroke-linecap="round"
-                                />
-                                <defs>
-                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-                                    </linearGradient>
-                                </defs>
-                            </svg>
-                            <div class="absolute">
-                                <div class="score-display gradient-text" id="score-display">0</div>
-                                <div class="text-gray-400 text-sm">/ 100</div>
-                            </div>
-                        </div>
-                        <div class="text-gray-300 text-sm">
-                            Qo'ng'iroq sifati ko'rsatkichi
-                        </div>
-                    </div>
-
-                    <div class="glass-strong rounded-2xl p-8 fade-in">
-                        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            <span>📦</span>
-                            Mahsulot: Abihayat
-                        </h3>
-                        <div class="space-y-3 text-gray-300">
-                            <div class="flex justify-between items-center pb-2 border-b border-gray-700">
-                                <span class="text-gray-400">Tarkib:</span>
-                                <span class="text-right text-sm">Asal, Ginseng, Ashwagandha, Baxmal</span>
-                            </div>
-                            <div class="flex justify-between items-center pb-2 border-b border-gray-700">
-                                <span class="text-gray-400">Narx:</span>
-                                <span class="font-bold text-green-400">600,000 so'm</span>
-                            </div>
-                            <div class="p-3 gradient-success rounded-lg text-white">
-                                <div class="font-bold mb-1">🎁 AKSIYA:</div>
-                                <div class="text-sm">2+2 Bonus Taklif</div>
-                                <div class="text-xs opacity-90">2 ta oling, 2 ta bepul!</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-coach" class="view-container hidden">
-            <div class="glass-strong rounded-2xl p-12 text-center fade-in">
-                <div class="text-8xl mb-6">🤖</div>
-                <h2 class="text-4xl font-black text-white mb-4">
-                    AI Coach — Tez Kunda
-                </h2>
-                <p class="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
-                    Real vaqt trenerligi, interaktiv rol-playing mashqlari va shaxsiylashtirilgan tavsiyalar bilan menegerlarning ko'nikmalarini oshiring.
-                </p>
-                <div class="inline-block px-8 py-3 glass rounded-full">
-                    <span class="text-indigo-300">⚡ Ishlab chiqilmoqda</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let selectedFile = null;
-        let milestones = [];
-
-        function switchTab(tab) {
-            document.getElementById('tab-analysis').classList.remove('active');
-            document.getElementById('tab-coach').classList.remove('active');
-            document.getElementById('view-analysis').classList.add('hidden');
-            document.getElementById('view-coach').classList.add('hidden');
-
-            if (tab === 'analysis') {
-                document.getElementById('tab-analysis').classList.add('active');
-                document.getElementById('view-analysis').classList.remove('hidden');
-            } else {
-                document.getElementById('tab-coach').classList.add('active');
-                document.getElementById('view-coach').classList.remove('hidden');
-            }
-        }
-
-        function addMilestone() {
-            const input = document.getElementById('milestone-input');
-            const value = input.value.trim();
-            
-            if (value === '') {
-                alert('Iltimos, mezon nomini kiriting!');
-                return;
-            }
-
-            milestones.push(value);
-            renderMilestones();
-            input.value = '';
-            input.focus();
-        }
-
-        function removeMilestone(index) {
-            milestones.splice(index, 1);
-            renderMilestones();
-        }
-
-        function renderMilestones() {
-            const container = document.getElementById('milestone-container');
-            const placeholder = document.getElementById('milestone-placeholder');
-
-            if (milestones.length === 0) {
-                placeholder.classList.remove('hidden');
-                container.innerHTML = '<p class="text-gray-400 text-center" id="milestone-placeholder">Hozircha mezon qo\'shilmagan. Yuqorida kiriting va ➕ bosing.</p>';
-            } else {
-                placeholder.classList.add('hidden');
-                container.innerHTML = milestones.map((milestone, index) => `
-                    <div class="milestone-badge">
-                        <span>${milestone}</span>
-                        <span class="remove-btn" onclick="removeMilestone(${index})">×</span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('dropzone').classList.add('dragover');
-        }
-
-        function handleDragLeave(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('dropzone').classList.remove('dragover');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('dropzone').classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                const file = files[0];
-                if (file.type.startsWith('audio/')) {
-                    processFile(file);
-                } else {
-                    alert('Iltimos, faqat audio fayl tanlang!');
-                }
-            }
-        }
-
-        function handleFileSelect(e) {
-            const file = e.target.files[0];
-            if (file) {
-                processFile(file);
-            }
-        }
-
-        function processFile(file) {
-            selectedFile = file;
-            
-            document.getElementById('dropzone-content').classList.add('hidden');
-            document.getElementById('file-info').classList.remove('hidden');
-            document.getElementById('file-name').textContent = file.name;
-            document.getElementById('file-size').textContent = formatFileSize(file.size);
-            document.getElementById('analyze-btn').classList.remove('hidden');
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        async function analyzeAudio() {
-            if (!selectedFile) {
-                alert('Iltimos, avval audio fayl yuklang!');
-                return;
-            }
-
-            document.getElementById('results-section').classList.add('hidden');
-            document.getElementById('loader-section').classList.remove('hidden');
-            document.getElementById('analyze-btn').disabled = true;
-
-            const formData = new FormData();
-            formData.append('audio', selectedFile);
-            formData.append('checklist', JSON.stringify(milestones));
-
-            try {
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Tahlil xatosi');
-                }
-
-                const result = await response.json();
-                displayResults(result);
-
-            } catch (error) {
-                console.error('Xatolik:', error);
-                alert('Tahlil paytida xatolik yuz berdi: ' + error.message);
-                document.getElementById('loader-section').classList.add('hidden');
-                document.getElementById('analyze-btn').disabled = false;
-            }
-        }
-
-        function displayResults(data) {
-            document.getElementById('loader-section').classList.add('hidden');
-            document.getElementById('results-section').classList.remove('hidden');
-
-            const score = data.score || 0;
-            document.getElementById('score-display').textContent = score;
-            
-            const circle = document.getElementById('progress-circle');
-            const circumference = 439.8;
-            const offset = circumference - (score / 100) * circumference;
-            circle.style.strokeDashoffset = offset;
-
-            document.getElementById('summary-text').textContent = data.summary || 'Xulosa mavjud emas';
-
-            const checkpointsContainer = document.getElementById('checkpoints-container');
-            if (data.checkpoints && data.checkpoints.length > 0) {
-                checkpointsContainer.innerHTML = data.checkpoints.map(checkpoint => `
-                    <div class="checkpoint-card glass rounded-xl p-4 flex items-start gap-4">
-                        <div class="flex-shrink-0">
-                            ${checkpoint.status === 'passed' 
-                                ? '<svg class="w-8 h-8 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
-                                : '<svg class="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>'
-                            }
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-2">
-                                <h4 class="text-white font-semibold text-lg">${checkpoint.name}</h4>
-                                <span class="status-badge ${checkpoint.status === 'passed' ? 'status-passed' : 'status-failed'}">
-                                    ${checkpoint.status === 'passed' ? 'Passed' : 'Failed'}
-                                </span>
-                                <span class="timeline-marker">${checkpoint.time}</span>
-                            </div>
-                            <p class="text-gray-300 text-sm">${checkpoint.comment}</p>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                checkpointsContainer.innerHTML = '<p class="text-gray-400 text-center py-4">Checkpoint ma\'lumotlari mavjud emas</p>';
-            }
-
-            const criticalErrorsSection = document.getElementById('critical-errors-section');
-            const criticalErrorsContainer = document.getElementById('critical-errors-container');
-            
-            if (data.critical_errors && data.critical_errors.length > 0) {
-                criticalErrorsSection.classList.remove('hidden');
-                criticalErrorsContainer.innerHTML = data.critical_errors.map(error => `
-                    <div class="critical-error-card">
-                        <div class="flex items-start gap-3">
-                            <span class="timeline-marker bg-red-600">${error.time}</span>
-                            <p class="text-white flex-1">${error.description}</p>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                criticalErrorsSection.classList.add('hidden');
-            }
-
-            document.getElementById('analyze-btn').disabled = false;
-
-            window.scrollTo({
-                top: document.getElementById('results-section').offsetTop - 100,
-                behavior: 'smooth'
-            });
-        }
-    </script>
+<body>
+<div id="root"></div>
+<script src="app.js"></script>
 </body>
 </html>
