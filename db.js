@@ -61,12 +61,12 @@ db.exec(`
 
 // ---------- Standart sozlamalar ----------
 const DEFAULT_PRODUCT = {
-  name: "Abihayat",
-  price: "285 000 so'm / quti (30 kunlik)",
-  category: "Tabiiy o'simlik asosidagi quvvat va salomatlik mahsuloti",
-  benefits: "Energiya oshiradi\nImmunitetni mustahkamlaydi",
-  ingredients: "100% tabiiy o'simlik ekstraktlari",
-  notes: "Dori vositasi emas, biologik faol qo'shimcha sifatida tavsiya etiladi",
+  name: "Abihayat damlamasi",
+  price: "1 quti — 600 000 so'm. 3 oylik to'liq kurs uchun 4 quti kerak (odatiy narx: 2 400 000 so'm). AKSIYA: 2 quti sotib olsangiz, qolgan 2 tasi BEPUL — ya'ni 4 qutini atigi 1 200 000 so'mga olasiz.",
+  category: "Turkiyaning Bursa tog'larida yetishtirilgan tabiiy o'tlardan tayyorlangan damlama (biologik faol qo'shimcha, dori vositasi emas)",
+  benefits: "Umumiy sog'lomlashtiruvchi, antioksidantlarga boy tabiiy tarkib. Yurak-qon tomir salomatligini va qon shakari muvozanatini tabiiy yo'l bilan qo'llab-quvvatlashga yordamchi vosita sifatida tavsiya etiladi (dori emas, davo o'rnini bosmaydi).",
+  ingredients: "Zaytun yaprog'i — antioksidantlarga boy, yurak-qon tomir salomatligini qo'llab-quvvatlashi bilan mashhur.\nKekik (kekik/kekkil) — an'anaviy tarzda nafas yo'llari va umumiy immunitetni qo'llab-quvvatlash uchun ishlatiladi, antibakterial xususiyatlari bilan tanilgan.\nDolchin — qon shakarini muvozanatlashga yordam beruvchi tabiiy vosita sifatida keng tanilgan.",
+  notes: "Sertifikatlar: GMP va ISO. MUHIM CHEKLOV: bu mahsulot DORI VOSITASI EMAS — hech qanday kasallikni davolamaydi, oldini olmaydi va shifo bermaydi. Diabet, yurak-qon tomir kasalliklari, insult kabi jiddiy holatlarda albatta shifokorga murojaat qilish va shifokor tavsiya etgan davolanishni davom ettirish kerak. Insult yoki yurak xuruji kabi shoshilinch holatlarda darhol tez tibbiy yordamga murojaat qilish kerak — damlama bunday holatlar uchun yechim emas.",
 };
 
 const DEFAULT_SCRIPT_STEPS = [
@@ -90,7 +90,9 @@ function seedIfEmpty() {
     console.log(`[SotuvAI] Standart admin yaratildi -> login: ${username} / parol: ${password}`);
     console.log("[SotuvAI] MUHIM: tizimga kirib, parolni darhol almashtiring!");
   }
-  if (!getSetting("product")) setSetting("product", JSON.stringify(DEFAULT_PRODUCT));
+  // Mahsulot ma'lumoti uchun endi admin panelda tahrirlash sahifasi yo'q —
+  // shuning uchun kod ichidagi DEFAULT_PRODUCT yagona manba hisoblanadi va har boot'da sinxronlashadi.
+  setSetting("product", JSON.stringify(DEFAULT_PRODUCT));
   if (!getSetting("script_steps")) setSetting("script_steps", JSON.stringify(DEFAULT_SCRIPT_STEPS));
 }
 
@@ -276,3 +278,4 @@ module.exports = {
   getAllHistory,
   getStats,
 };
+
