@@ -139,7 +139,7 @@ async function logout() {
 function navItemsFor(role) {
   const common = [
     { id: "dashboard", label: "Bosh sahifa", icon: "📊" },
-    { id: "chat", label: "Mahsulot AI", icon: "💬" },
+    { id: "chat", label: "ALIVIDA AI", icon: "💬" },
     { id: "call", label: "Qo'ng'iroq tahlili", icon: "📞" },
   ];
   const adminOnly = [
@@ -571,7 +571,7 @@ function renderChatView() {
   <div class="page chat-wrap">
     <div class="chat-top">
       <div>
-        <h1>Mahsulot AI</h1>
+        <h1>ALIVIDA AI</h1>
         <p class="desc">Operator savol beradi, AI mahsulot ma'lumoti asosida javob beradi — <b>${esc(state.product?.name || "")}</b>.</p>
       </div>
     </div>
@@ -809,3 +809,4 @@ async function loadAndRenderAdminHistory() {
     el.onclick = () => openHistoryDetail(+el.dataset.id);
   });
 }
+
