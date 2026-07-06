@@ -281,12 +281,12 @@ async function loadAndRenderDashboard() {
 
     <div class="charts">
       <div class="chart-card">
-        <div class="title">So'nggi 14 kunlik dinamika</div>
-        <canvas id="trendChart" height="180"></canvas>
+        <div class="title">📈 So'nggi 14 kunlik dinamika</div>
+        <canvas id="trendChart" height="190"></canvas>
       </div>
       <div class="chart-card">
-        <div class="title">O'rtacha ko'rsatkichlar (6 mezon)</div>
-        <canvas id="radarChart" height="180"></canvas>
+        <div class="title">📊 O'rtacha ko'rsatkichlar (6 mezon)</div>
+        <canvas id="barChart" height="190"></canvas>
       </div>
     </div>
 
@@ -315,37 +315,63 @@ async function loadAndRenderDashboard() {
   drawDashboardCharts();
 }
 
+const UZ_MONTHS = ["yan","fev","mar","apr","may","iyn","iyl","avg","sen","okt","noy","dek"];
+function shortDay(dateStr) {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return `${d}-${UZ_MONTHS[(m||1)-1]}`;
+}
+
 function drawDashboardCharts() {
   if (state.charts.trend) state.charts.trend.destroy();
-  if (state.charts.radar) state.charts.radar.destroy();
+  if (state.charts.bar) state.charts.bar.destroy();
 
   const byDay = state.stats.byDay || [];
   const trendCtx = document.getElementById("trendChart");
   state.charts.trend = new Chart(trendCtx, {
     type: "line",
     data: {
-      labels: byDay.map(d => d.day),
+      labels: byDay.map(d => shortDay(d.day)),
       datasets: [
-        { label: "Halollik", data: byDay.map(d => Math.round(d.avg_honesty || 0)), borderColor: "#C6992E", backgroundColor: "#C6992E33", tension: .3 },
-        { label: "Skript bajarilishi", data: byDay.map(d => Math.round(d.avg_script || 0)), borderColor: "#2F6B4A", backgroundColor: "#2F6B4A33", tension: .3 },
+        { label: "Halollik", data: byDay.map(d => Math.round(d.avg_honesty || 0)), borderColor: "#C6992E", backgroundColor: "#C6992E22", fill: true, tension: .35, pointRadius: 3, pointBackgroundColor: "#C6992E" },
+        { label: "Skript bajarilishi", data: byDay.map(d => Math.round(d.avg_script || 0)), borderColor: "#2F6B4A", backgroundColor: "#2F6B4A22", fill: true, tension: .35, pointRadius: 3, pointBackgroundColor: "#2F6B4A" },
       ],
     },
-    options: { responsive: true, scales: { y: { min: 0, max: 100 } }, plugins: { legend: { position: "bottom" } } },
+    options: {
+      responsive: true,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        y: { min: 0, max: 100, ticks: { stepSize: 25, callback: (v) => v + "%" }, grid: { color: "#EFE8D2" } },
+        x: { grid: { display: false } },
+      },
+      plugins: { legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 11 } } } },
+    },
   });
 
   const t = state.stats.totals || {};
-  const radarCtx = document.getElementById("radarChart");
-  state.charts.radar = new Chart(radarCtx, {
-    type: "radar",
+  const barLabels = ["Halollik", "Skript", "Ishonch", "Muloyimlik", "Mahsulot bilimi", "Yopish mahorati"];
+  const barValues = [t.avg_honesty, t.avg_script, t.avg_confidence, t.avg_politeness, t.avg_knowledge, t.avg_closing].map(v => Math.round(v || 0));
+  const barCtx = document.getElementById("barChart");
+  state.charts.bar = new Chart(barCtx, {
+    type: "bar",
     data: {
-      labels: ["Halollik", "Skript", "Ishonch", "Muloyimlik", "Bilim", "Yopish"],
+      labels: barLabels,
       datasets: [{
-        label: "O'rtacha",
-        data: [t.avg_honesty, t.avg_script, t.avg_confidence, t.avg_politeness, t.avg_knowledge, t.avg_closing].map(v => Math.round(v || 0)),
-        backgroundColor: "#C6992E33", borderColor: "#C6992E", pointBackgroundColor: "#0B1526",
+        data: barValues,
+        backgroundColor: barValues.map(scoreColor),
+        borderRadius: 5,
+        barThickness: 16,
       }],
     },
-    options: { responsive: true, scales: { r: { min: 0, max: 100 } }, plugins: { legend: { display: false } } },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      scales: {
+        x: { min: 0, max: 100, ticks: { stepSize: 25, callback: (v) => v + "%" }, grid: { color: "#EFE8D2" } },
+        y: { grid: { display: false } },
+      },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.parsed.x + " / 100" } } },
+    },
   });
 }
 
@@ -457,7 +483,33 @@ const SCORE_LABELS = [
 ];
 
 function renderResult(r) {
+  const tr = r.talk_ratio || {};
+  const opPct = tr.operator_percent ?? 0;
+  const cuPct = tr.customer_percent ?? 0;
+  const ratioOk = !!tr.meets_rule;
+
   return `
+    ${(r.conversation_outline && r.conversation_outline.length) ? `
+    <div class="result-card">
+      <div class="title">🗂️ Suhbat strukturasi</div>
+      <ol style="margin:0;padding-left:18px;font-size:13px;color:#4B4536;line-height:1.6;">
+        ${r.conversation_outline.map(step => `<li>${esc(step)}</li>`).join("")}
+      </ol>
+    </div>` : ""}
+
+    ${tr.operator_percent != null ? `
+    <div class="result-card">
+      <div class="title">🗣️ Gapirish nisbati <span style="font-weight:400;color:${ratioOk?'#2F6B4A':'#8B2E2E'};font-size:12px;">${ratioOk ? "✔ Qoidaga mos (mijoz ~70%)" : "⚠ Qoidadan chetlashgan"}</span></div>
+      <div style="display:flex;height:22px;border-radius:6px;overflow:hidden;font-size:11px;font-weight:700;">
+        <div style="width:${opPct}%;background:#0B1526;color:#fff;display:flex;align-items:center;justify-content:center;">${opPct}%</div>
+        <div style="width:${cuPct}%;background:#C6992E;color:#0B1526;display:flex;align-items:center;justify-content:center;">${cuPct}%</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px;">
+        <span>⬤ Operator</span><span>Mijoz ⬤</span>
+      </div>
+      ${tr.note ? `<p style="font-size:13px;color:#4B4536;margin:10px 0 0;">${esc(tr.note)}</p>` : ""}
+    </div>` : ""}
+
     <div class="score-grid">
       ${SCORE_LABELS.map(([key, label]) => `
         <div class="score-item">
@@ -486,7 +538,7 @@ function renderResult(r) {
       ${r.issues.map(iss => {
         const c = iss.severity==="yuqori"?"#8B2E2E":iss.severity==="o'rta"?"#C6992E":"#9AA3BD";
         return `<div class="issue" style="border-color:${c}">
-          <div class="sev" style="color:${c}">⚠ ${esc(iss.severity||"")} darajali</div>
+          <div class="sev" style="color:${c}">⚠ ${esc(iss.severity||"")} darajali ${iss.when ? `· 🕒 ${esc(iss.when)}` : ""}</div>
           <div class="quote">"${esc(iss.quote||"")}"</div>
           <div class="row"><b>Nima xato edi:</b> ${esc(iss.what_was_wrong||"")}</div>
           <div class="row"><b>Nega xato:</b> ${esc(iss.why_wrong||"")}</div>
