@@ -45,6 +45,8 @@ db.exec(`
     summary TEXT,
     steps_json TEXT,
     issues_json TEXT,
+    outline_json TEXT,
+    talk_ratio_json TEXT,
     created_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
@@ -58,6 +60,16 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_calls_created ON calls(created_at);
   CREATE INDEX IF NOT EXISTS idx_chat_user ON chat_messages(user_id);
 `);
+
+// Eski (allaqachon deploy qilingan) bazalarda yangi ustunlar bo'lmasligi mumkin — xavfsiz qo'shamiz
+function ensureColumn(table, column, definition) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+ensureColumn("calls", "outline_json", "TEXT");
+ensureColumn("calls", "talk_ratio_json", "TEXT");
 
 // ---------- Standart sozlamalar ----------
 const DEFAULT_PRODUCT = {
@@ -172,8 +184,9 @@ function saveCallAnalysis(userId, { source, title, transcript, analysis }) {
     .prepare(
       `INSERT INTO calls
         (user_id, source, title, transcript, honesty_score, script_completion, confidence_score,
-         politeness_score, product_knowledge_score, closing_skill_score, summary, steps_json, issues_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         politeness_score, product_knowledge_score, closing_skill_score, summary, steps_json, issues_json,
+         outline_json, talk_ratio_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       userId,
@@ -188,7 +201,9 @@ function saveCallAnalysis(userId, { source, title, transcript, analysis }) {
       analysis.closing_skill_score ?? null,
       analysis.summary || "",
       JSON.stringify(analysis.steps || []),
-      JSON.stringify(analysis.issues || [])
+      JSON.stringify(analysis.issues || []),
+      JSON.stringify(analysis.conversation_outline || []),
+      JSON.stringify(analysis.talk_ratio || {})
     );
   return info.lastInsertRowid;
 }
@@ -218,6 +233,8 @@ function hydrateCall(row) {
     ...row,
     steps: row.steps_json ? JSON.parse(row.steps_json) : [],
     issues: row.issues_json ? JSON.parse(row.issues_json) : [],
+    conversation_outline: row.outline_json ? JSON.parse(row.outline_json) : [],
+    talk_ratio: row.talk_ratio_json ? JSON.parse(row.talk_ratio_json) : null,
   };
 }
 
