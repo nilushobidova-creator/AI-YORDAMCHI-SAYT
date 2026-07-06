@@ -50,9 +50,16 @@ Eslatmalar: ${product.notes || "-"}`;
 
 // ---------- Mahsulot bo'yicha chat (ALIVIDA AI) ----------
 async function chatReply(product, history, message) {
-  const system = `Sen "ALIVIDA AI" — Abihayat damlamasi bo'yicha operatorga (sotuv menejeriga) yordam beruvchi aqlli yordamchisan. O'zingni har doim "ALIVIDA AI" deb tanishtirasan.
+  const isFirstMessage = history.length === 0;
+  const greetingRule = isFirstMessage
+    ? `Bu operator bilan suhbatning BIRINCHI xabari. Shuning uchun javobingni o'zingni "ALIVIDA AI" sifatida qisqa va iliq tanishtirishdan boshla, keyin savolga javob ber.`
+    : `Bu suhbat allaqachon davom etmoqda (tarix mavjud). SHUNING UCHUN o'zingni QAYTA TANISHTIRMA va "Salom" bilan boshlama — to'g'ridan-to'g'ri savolga javob ber, xuddi davom etayotgan suhbatdagidek.`;
 
-USLUB: Javoblaring iliq, samimiy, TO'LIQ va BATAFSIL bo'lsin. O'rinli joyda emoji ishlat 🌿✅💬. Hech qachon bir og'iz ("100% tabiiy" kabi) javob berma — savolni to'liq tahlil qil va mavjud ma'lumotdan foydalanib chuqur tushuntir. Oddiy "Salom" yozilsa ham, o'zingni ALIVIDA AI sifatida iliq tanishtirib salomlash.
+  const system = `Sen "ALIVIDA AI" — Abihayat damlamasi bo'yicha operatorga (sotuv menejeriga) yordam beruvchi aqlli yordamchisan.
+
+${greetingRule}
+
+USLUB: Javoblaring iliq, samimiy, TO'LIQ va BATAFSIL bo'lsin. O'rinli joyda emoji ishlat 🌿✅💬. Hech qachon bir og'iz ("100% tabiiy" kabi) javob berma — savolni to'liq tahlil qil va mavjud ma'lumotdan foydalanib chuqur tushuntir.
 
 MAHSULOT MA'LUMOTI:
 ${formatProduct(product)}
@@ -79,7 +86,18 @@ QOIDALAR:
 // ---------- Tahlil uchun umumiy JSON sxema ----------
 const ANALYSIS_SCHEMA_HINT = `Javobni FAQAT quyidagi JSON formatda ber, boshqa hech narsa yozma, kod bloklarisiz, izohlarsiz:
 {
-  "honesty_score": 0-100 (menejer qanchalik rost va aniq gapirgani),
+  "conversation_outline": [
+    "1-bosqich: qisqacha nima bo'lgani (masalan: 'Salomlashish va tanishtirish')",
+    "2-bosqich: ...",
+    "... suhbat oxirigacha xronologik tartibda"
+  ],
+  "talk_ratio": {
+    "operator_percent": 0-100 (operator taxminan qancha foiz gapirgani),
+    "customer_percent": 0-100 (mijoz taxminan qancha foiz gapirgani, ikkisi jamda 100 bo'lishi kerak),
+    "meets_rule": true/false (qoida: mijoz ~70%, operator ~30% gapirishi kerak; taxminan ±10% farq qabul qilinadi),
+    "note": "qisqa izoh - kim ko'proq gapirgani va bu qoidaga mos yoki mos emasligi"
+  },
+  "honesty_score": 0-100 (menejer qanchalik rost gapirgani — FAQAT haqiqiy yolg'on/noto'g'ri faktlar uchun past ball ber, oddiy sotuv bosimi uchun EMAS),
   "script_completion": 0-100 (skript necha foiz bajarilgani),
   "confidence_score": 0-100 (menejer qanchalik ishonchli va tinch gapirgani),
   "politeness_score": 0-100 (menejerning muloyimligi, hurmati),
@@ -88,8 +106,9 @@ const ANALYSIS_SCHEMA_HINT = `Javobni FAQAT quyidagi JSON formatda ber, boshqa h
   "steps": [{"step": "bosqich nomi", "completed": true/false, "note": "qisqa izoh"}],
   "issues": [
     {
+      "when": "suhbatning qaysi bosqichida yuz bergani (masalan: 'taqdimot paytida', 'yopish bosqichida', '3-daqiqa atrofida')",
       "quote": "transkript/audiodan qisqa parcha",
-      "what_was_wrong": "nima xato yoki yolg'on ekani",
+      "what_was_wrong": "nima xato yoki haqiqiy yolg'on ekani",
       "why_wrong": "bu nega xato yoki muammoli ekanining sababi",
       "correct_version": "shu joyda qanday aytish to'g'ri bo'lardi",
       "severity": "past/o'rta/yuqori"
@@ -107,7 +126,12 @@ ${scriptSteps.map((s, i) => `${i + 1}. ${s}`).join("\n")}
 MAHSULOT HAQIDA TO'G'RI MA'LUMOT (operatorning aytganlarini shu bilan solishtir):
 ${formatProduct(product)}
 
-Har bir aniqlangan xato yoki yolg'on uchun albatta uchta narsani alohida ko'rsat: nima xato edi, nega bu xato/muammoli, va to'g'ri versiyasi qanday bo'lishi kerak edi.
+MUHIM YO'NALISH — juda qattiqqo'l bo'lma:
+- Sotuvda me'yorida bosim qilish, shoshiltirish, aksiya muddatini ta'kidlash, "bu imkoniyatni boy bermang" kabi urgency yaratish — BU ODDIY VA QABUL QILINADIGAN sotuv texnikasi. Buni xato yoki yolg'on deb hisoblama.
+- Faqat operator HAQIQIY yolg'on gapirsa (mahsulot haqida noto'g'ri fakt, mavjud bo'lmagan aksiya/sertifikat haqida gapirish, soxta va'da berish) — shunda honesty_score'ni pasaytir va issues'ga qo'sh.
+- Avval suhbatning umumiy borishini ("conversation_outline") xronologik tartibda, qisqa bosqichlar ko'rinishida tuzib chiq — bu tahlil o'qiladigan birinchi narsa bo'ladi.
+- Har bir aniqlangan xato uchun albatta TO'RT narsani ko'rsat: qaysi vaqtda/bosqichda yuz bergani, nima xato edi, nega bu xato, va to'g'ri versiyasi.
+- talk_ratio: suhbat davomida operator va mijozning taxminan necha foiz gapirganini baho qil. Sotuv qoidasi bo'yicha mijoz ~70%, operator ~30% gapirishi kerak (operator ko'proq tinglashi kerak).
 
 ${ANALYSIS_SCHEMA_HINT}`;
 }
@@ -123,7 +147,7 @@ async function analyzeTranscript(scriptSteps, product, transcript) {
 async function analyzeAudio(scriptSteps, product, audioBuffer, mimeType) {
   const system = buildAnalysisSystem(scriptSteps, product) + `
 
-Senga qo'shimcha ravishda audio yozuvning o'zi beriladi. Avval uni diqqat bilan tingla, so'ng yuqoridagi JSON formatda tahlil qil. Dialogni so'zma-so'z qayta yozib chiqarma — faqat o'zingning tahlil xulosangni ber.`;
+Senga qo'shimcha ravishda audio yozuvning o'zi beriladi. Avval uni diqqat bilan tingla, so'ng yuqoridagi JSON formatda tahlil qil. Dialogni so'zma-so'z qayta yozib chiqarma — faqat o'zingning tahlil xulosangni ber. talk_ratio'ni ovoz balandligi/vaqt taqsimotiga qarab taxminiy baholashga harakat qil.`;
   const base64Audio = audioBuffer.toString("base64");
   const raw = await callGeminiRaw(system, [
     { inline_data: { mime_type: mimeType, data: base64Audio } },
@@ -135,8 +159,16 @@ Senga qo'shimcha ravishda audio yozuvning o'zi beriladi. Avval uni diqqat bilan 
 // Gemini har doim hamma maydonni to'liq qaytarmasligi mumkin — xavfsiz standartlar bilan to'ldiramiz
 function normalizeAnalysis(a) {
   const clamp = (v) => Math.max(0, Math.min(100, Math.round(Number(v) || 0)));
+  const tr = a.talk_ratio || {};
   return {
     transcript: a.transcript || null,
+    conversation_outline: Array.isArray(a.conversation_outline) ? a.conversation_outline : [],
+    talk_ratio: {
+      operator_percent: clamp(tr.operator_percent),
+      customer_percent: clamp(tr.customer_percent),
+      meets_rule: !!tr.meets_rule,
+      note: tr.note || "",
+    },
     honesty_score: clamp(a.honesty_score),
     script_completion: clamp(a.script_completion),
     confidence_score: clamp(a.confidence_score),
