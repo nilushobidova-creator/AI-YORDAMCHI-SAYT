@@ -65,6 +65,14 @@ async function boot() {
     state.user = null;
   }
   render();
+
+  // Har qanday DOM o'zgarishida (yangi sahifa, modal va h.k.) Lucide ikonlarini avtomatik chizadi
+  const iconObserver = new MutationObserver(() => {
+    if (!window.lucide) return;
+    cancelAnimationFrame(state._iconRaf);
+    state._iconRaf = requestAnimationFrame(() => lucide.createIcons());
+  });
+  iconObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 /* ============================================================
@@ -89,7 +97,8 @@ function renderLogin() {
   return `
   <div class="login-wrap">
     <div class="login-card">
-      <h1 class="serif">✦ SotuvAI</h1>
+      <div class="logo-badge" style="width:44px;height:44px;border-radius:11px;margin-bottom:14px;"><i data-lucide="gem" style="width:24px;height:24px;color:#0B1526;stroke-width:2.2;"></i></div>
+      <h1 class="serif">SotuvAI</h1>
       <div class="sub">Sotuv menejeri yordamchisi — tizimga kiring</div>
       <form id="loginForm">
         <label>Login</label>
@@ -97,7 +106,7 @@ function renderLogin() {
         <label>Parol</label>
         <input type="password" id="loginPassword" autocomplete="current-password" required />
         <button type="submit" class="btn-primary" ${state.loadingLogin ? "disabled" : ""}>
-          ${state.loadingLogin ? "Tekshirilmoqda..." : "Kirish"}
+          ${state.loadingLogin ? "Tekshirilmoqda..." : '<i data-lucide="log-in"></i> Kirish'}
         </button>
       </form>
       <div class="login-err">${state.loginError || ""}</div>
@@ -138,14 +147,14 @@ async function logout() {
    ============================================================ */
 function navItemsFor(role) {
   const common = [
-    { id: "dashboard", label: "Bosh sahifa", icon: "📊" },
-    { id: "chat", label: "ALIVIDA AI", icon: "💬" },
-    { id: "call", label: "Qo'ng'iroq tahlili", icon: "📞" },
+    { id: "dashboard", label: "Bosh sahifa", icon: "layout-dashboard" },
+    { id: "chat", label: "ALIVIDA AI", icon: "message-circle" },
+    { id: "call", label: "Qo'ng'iroq tahlili", icon: "phone-call" },
   ];
   const adminOnly = [
-    { id: "script", label: "Skript sozlamalari", icon: "📋" },
-    { id: "users", label: "Foydalanuvchilar", icon: "👥" },
-    { id: "adminHistory", label: "Barcha tarix", icon: "🗂️" },
+    { id: "script", label: "Skript sozlamalari", icon: "clipboard-list" },
+    { id: "users", label: "Foydalanuvchilar", icon: "users" },
+    { id: "adminHistory", label: "Barcha tarix", icon: "history" },
   ];
   return role === "admin" ? [...common, ...adminOnly] : common;
 }
@@ -156,21 +165,24 @@ function renderShell() {
   <div class="app">
     <div class="sidebar">
       <div class="brand">
-        <div class="name">✦ SotuvAI</div>
-        <div class="sub">Sotuv menejeri yordamchisi</div>
+        <div class="logo-badge"><i data-lucide="gem"></i></div>
+        <div>
+          <div class="name">SotuvAI</div>
+          <div class="sub">Sotuv menejeri yordamchisi</div>
+        </div>
       </div>
       <svg class="ikat" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
       <div class="nav">
         ${items.map(it => `
           <button data-view="${it.id}" class="${state.view===it.id?'active':''}">
-            <span>${it.icon}</span><span class="lbl">${it.label}</span>
+            <span class="nav-icon-badge"><i data-lucide="${it.icon}"></i></span><span class="lbl">${it.label}</span>
           </button>`).join("")}
       </div>
       <div class="foot">
         <div class="who">${esc(state.user.full_name || state.user.username)}</div>
         <div class="role">${state.user.role === "admin" ? "Administrator" : "Operator"}</div>
-        <button id="changePwBtn" style="margin-top:6px;">🔒 Parolni almashtirish</button>
-        <button id="logoutBtn">Chiqish</button>
+        <button id="changePwBtn" style="margin-top:6px;"><i data-lucide="lock"></i> Parolni almashtirish</button>
+        <button id="logoutBtn"><i data-lucide="log-out"></i> Chiqish</button>
       </div>
     </div>
     <div class="main" id="main"></div>
@@ -194,7 +206,7 @@ function openPasswordModal() {
   overlay.id = "pwOverlay";
   overlay.innerHTML = `
     <div class="modal-box">
-      <h2 class="serif">Parolni almashtirish</h2>
+      <h2 class="serif"><i data-lucide="lock" style="width:16px;height:16px;vertical-align:-2px;margin-right:6px;color:var(--gold-deep);"></i>Parolni almashtirish</h2>
       <div class="sub">Xavfsizlik uchun joriy parolingizni ham kiriting.</div>
       <label>Joriy parol</label>
       <input type="password" id="pw_current" />
@@ -203,8 +215,8 @@ function openPasswordModal() {
       <label>Yangi parolni takrorlang</label>
       <input type="password" id="pw_confirm" />
       <div class="modal-actions">
-        <button class="btn-outline" id="pw_cancel">Bekor qilish</button>
-        <button class="btn-primary" id="pw_save">Saqlash</button>
+        <button class="btn-outline" id="pw_cancel"><i data-lucide="x"></i> Bekor qilish</button>
+        <button class="btn-primary" id="pw_save"><i data-lucide="save"></i> Saqlash</button>
       </div>
       <div class="modal-msg" id="pw_msg"></div>
     </div>`;
@@ -223,7 +235,9 @@ function openPasswordModal() {
     msg.textContent = "Saqlanmoqda..."; msg.style.color = "var(--muted)";
     try {
       await api("PATCH", "/api/me/password", { currentPassword: current, newPassword: next });
-      msg.textContent = "✔ Parol almashtirildi"; msg.style.color = "var(--success)";
+      msg.innerHTML = '<i data-lucide="check-circle-2" style="width:14px;height:14px;vertical-align:-2px;"></i> Parol almashtirildi';
+      msg.style.color = "var(--success)";
+      if (window.lucide) lucide.createIcons();
       setTimeout(() => overlay.remove(), 900);
     } catch (e) {
       msg.textContent = e.message; msg.style.color = "var(--danger)";
@@ -274,18 +288,18 @@ async function loadAndRenderDashboard() {
     <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
 
     <div class="stats">
-      <div class="card"><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value" style="color:#0B1526">${t.count || 0}</div></div>
-      <div class="card"><div class="label">O'rtacha halollik balli</div><div class="value" style="color:#C6992E">${round(t.avg_honesty)}</div></div>
-      <div class="card"><div class="label">O'rtacha skript bajarilishi</div><div class="value" style="color:#2F6B4A">${t.avg_script!=null?round(t.avg_script)+"%":"—"}</div></div>
+      <div class="card"><div class="stat-icon"><i data-lucide="phone-call"></i></div><div><div class="label">Tahlil qilingan qo'ng'iroqlar</div><div class="value" style="color:#0B1526">${t.count || 0}</div></div></div>
+      <div class="card"><div class="stat-icon"><i data-lucide="shield-check"></i></div><div><div class="label">O'rtacha halollik balli</div><div class="value" style="color:#C6992E">${round(t.avg_honesty)}</div></div></div>
+      <div class="card"><div class="stat-icon"><i data-lucide="list-checks"></i></div><div><div class="label">O'rtacha skript bajarilishi</div><div class="value" style="color:#2F6B4A">${t.avg_script!=null?round(t.avg_script)+"%":"—"}</div></div></div>
     </div>
 
     <div class="charts">
       <div class="chart-card">
-        <div class="title">📈 So'nggi 14 kunlik dinamika</div>
+        <div class="title"><i data-lucide="trending-up" class="title-icon"></i>So'nggi 14 kunlik dinamika</div>
         <canvas id="trendChart" height="190"></canvas>
       </div>
       <div class="chart-card">
-        <div class="title">📊 O'rtacha ko'rsatkichlar (6 mezon)</div>
+        <div class="title"><i data-lucide="bar-chart-3" class="title-icon"></i>O'rtacha ko'rsatkichlar (6 mezon)</div>
         <canvas id="barChart" height="190"></canvas>
       </div>
     </div>
@@ -293,13 +307,14 @@ async function loadAndRenderDashboard() {
     <h2 class="serif" style="font-size:18px;margin-top:32px;">So'nggi tahlillar</h2>
     <div id="historyList">
       ${state.history.length === 0
-        ? `<div class="empty">Hozircha tahlil yo'q. <a id="goCall">Birinchi qo'ng'iroqni tahlil qiling</a></div>`
+        ? `<div class="empty"><i data-lucide="inbox" style="width:22px;height:22px;color:#C9BE9A;margin-bottom:8px;"></i><br>Hozircha tahlil yo'q. <a id="goCall">Birinchi qo'ng'iroqni tahlil qiling</a></div>`
         : state.history.slice(0, 8).map(h => `
           <div class="history-item" data-id="${h.id}">
             <div><div class="t">${esc(h.title || "Qo'ng'iroq")}${h.full_name ? " — " + esc(h.full_name) : ""}</div><div class="tm">${fmtDate(h.created_at)}</div></div>
-            <div>
-              <span style="color:#2F6B4A;margin-right:14px;">${h.script_completion}% skript</span>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="color:#2F6B4A;">${h.script_completion}% skript</span>
               <span style="color:${scoreColor(h.honesty_score)}">${h.honesty_score} halollik</span>
+              <i data-lucide="chevron-right" class="chevron"></i>
             </div>
           </div>`).join("")
       }
@@ -437,15 +452,15 @@ function renderCallView() {
     <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
 
     <div class="script-note">
-      Skript bosqichlari (admin tomonidan belgilangan):
+      <i data-lucide="clipboard-list" class="title-icon"></i>Skript bosqichlari (admin tomonidan belgilangan):
       <ol>${state.scriptSteps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
     </div>
 
     <div class="cols">
       <div>
         <div class="mode-toggle">
-          <button class="mode-btn ${state.inputMode==='text'?'active':''}" data-mode="text">✎ Matn</button>
-          <button class="mode-btn ${state.inputMode==='audio'?'active':''}" data-mode="audio">🎙 Audio fayl</button>
+          <button class="mode-btn ${state.inputMode==='text'?'active':''}" data-mode="text"><i data-lucide="file-text"></i> Matn</button>
+          <button class="mode-btn ${state.inputMode==='audio'?'active':''}" data-mode="audio"><i data-lucide="mic"></i> Audio fayl</button>
         </div>
         ${state.inputMode === "text" ? `
           <textarea class="transcript" id="transcript" rows="9" placeholder="Menejer: Assalomu alaykum...&#10;Mijoz: ..."></textarea>
@@ -453,20 +468,20 @@ function renderCallView() {
           <div class="audio-drop" id="audioDrop">
             <input type="file" id="audioFile" accept="audio/*" style="display:none;" />
             ${state.audioFile
-              ? `<div class="audio-picked">🎧 ${esc(state.audioFile.name)} <button id="removeAudio">✕</button></div>`
-              : `<div class="audio-hint">Audio faylni tanlash uchun bosing<br><span>mp3, wav, m4a, ogg — 20MB gacha</span></div>`}
+              ? `<div class="audio-picked"><i data-lucide="headphones"></i> ${esc(state.audioFile.name)} <button id="removeAudio"><i data-lucide="x"></i></button></div>`
+              : `<div class="audio-hint"><i data-lucide="upload-cloud" style="width:22px;height:22px;color:#C9BE9A;margin-bottom:6px;"></i><br>Audio faylni tanlash uchun bosing<br><span>mp3, wav, m4a, ogg — 20MB gacha</span></div>`}
           </div>
           ${state.audioFile ? `<audio controls src="${state.audioUrl}" style="width:100%;margin-top:10px;"></audio>` : ""}
         `}
         <div id="progressHolder">
           ${state.loadingAnalyze
             ? progressRingSVG(Math.round(state.analyzeProgress || 0))
-            : `<button class="btn-primary btn-analyze" id="analyzeBtn">📞 Tahlil qilish</button>`}
+            : `<button class="btn-primary btn-analyze" id="analyzeBtn"><i data-lucide="phone-call"></i> Tahlil qilish</button>`}
         </div>
         <div id="analyzeErr" class="err"></div>
       </div>
       <div id="resultCol">
-        ${state.result ? renderResult(state.result) : `<div class="empty" style="height:100%;display:flex;align-items:center;justify-content:center;">Natija shu yerda ko'rinadi.</div>`}
+        ${state.result ? renderResult(state.result) : `<div class="empty" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;"><i data-lucide="bar-chart-2" style="width:26px;height:26px;color:#C9BE9A;margin-bottom:8px;"></i>Natija shu yerda ko'rinadi.</div>`}
       </div>
     </div>
   </div>`;
@@ -474,12 +489,12 @@ function renderCallView() {
 }
 
 const SCORE_LABELS = [
-  ["honesty_score", "Halollik"],
-  ["script_completion", "Skript bajarilishi"],
-  ["confidence_score", "Ishonch"],
-  ["politeness_score", "Muloyimlik"],
-  ["product_knowledge_score", "Mahsulot bilimi"],
-  ["closing_skill_score", "Yopish mahorati"],
+  ["honesty_score", "Halollik", "shield-check"],
+  ["script_completion", "Skript bajarilishi", "list-checks"],
+  ["confidence_score", "Ishonch", "zap"],
+  ["politeness_score", "Muloyimlik", "heart-handshake"],
+  ["product_knowledge_score", "Mahsulot bilimi", "book-open"],
+  ["closing_skill_score", "Yopish mahorati", "flag"],
 ];
 
 function renderResult(r) {
@@ -491,7 +506,7 @@ function renderResult(r) {
   return `
     ${(r.conversation_outline && r.conversation_outline.length) ? `
     <div class="result-card">
-      <div class="title">🗂️ Suhbat strukturasi</div>
+      <div class="title"><i data-lucide="list-tree" class="title-icon"></i>Suhbat strukturasi</div>
       <ol style="margin:0;padding-left:18px;font-size:13px;color:#4B4536;line-height:1.6;">
         ${r.conversation_outline.map(step => `<li>${esc(step)}</li>`).join("")}
       </ol>
@@ -499,46 +514,53 @@ function renderResult(r) {
 
     ${tr.operator_percent != null ? `
     <div class="result-card">
-      <div class="title">🗣️ Gapirish nisbati <span style="font-weight:400;color:${ratioOk?'#2F6B4A':'#8B2E2E'};font-size:12px;">${ratioOk ? "✔ Qoidaga mos (mijoz ~70%)" : "⚠ Qoidadan chetlashgan"}</span></div>
+      <div class="title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span><i data-lucide="scale" class="title-icon"></i>Gapirish nisbati</span>
+        <span style="display:flex;align-items:center;gap:4px;font-weight:400;color:${ratioOk?'#2F6B4A':'#8B2E2E'};font-size:12px;">
+          <i data-lucide="${ratioOk ? 'check-circle-2' : 'alert-triangle'}" style="width:13px;height:13px;"></i>
+          ${ratioOk ? "Qoidaga mos (mijoz ~70%)" : "Qoidadan chetlashgan"}
+        </span>
+      </div>
       <div style="display:flex;height:22px;border-radius:6px;overflow:hidden;font-size:11px;font-weight:700;">
         <div style="width:${opPct}%;background:#0B1526;color:#fff;display:flex;align-items:center;justify-content:center;">${opPct}%</div>
         <div style="width:${cuPct}%;background:#C6992E;color:#0B1526;display:flex;align-items:center;justify-content:center;">${cuPct}%</div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px;">
-        <span>⬤ Operator</span><span>Mijoz ⬤</span>
+        <span style="display:flex;align-items:center;gap:4px;"><i data-lucide="user" style="width:11px;height:11px;"></i> Operator</span>
+        <span style="display:flex;align-items:center;gap:4px;">Mijoz <i data-lucide="users" style="width:11px;height:11px;"></i></span>
       </div>
       ${tr.note ? `<p style="font-size:13px;color:#4B4536;margin:10px 0 0;">${esc(tr.note)}</p>` : ""}
     </div>` : ""}
 
     <div class="score-grid">
-      ${SCORE_LABELS.map(([key, label]) => `
+      ${SCORE_LABELS.map(([key, label, icon]) => `
         <div class="score-item">
-          <div class="lbl"><span>${label}</span><span>${r[key] ?? "—"}</span></div>
+          <div class="lbl"><span><i data-lucide="${icon}"></i>${label}</span><span>${r[key] ?? "—"}</span></div>
           <div class="score-bar"><div style="width:${r[key]||0}%;background:${scoreColor(r[key]||0)}"></div></div>
         </div>`).join("")}
     </div>
 
     <div class="result-card">
-      <div class="title">Xulosa</div>
+      <div class="title"><i data-lucide="sparkles" class="title-icon"></i>Xulosa</div>
       <p style="font-size:14px;color:#4B4536;margin:0;">${esc(r.summary || "")}</p>
     </div>
 
     <div class="result-card">
-      <div class="title">Skript bo'yicha bosqichlar</div>
+      <div class="title"><i data-lucide="clipboard-list" class="title-icon"></i>Skript bo'yicha bosqichlar</div>
       ${(r.steps||[]).map(s => `
         <div class="step-line">
-          <span style="color:${s.completed?'#2F6B4A':'#8B2E2E'}">${s.completed?"✔":"✕"}</span>
+          <i data-lucide="${s.completed?'check-circle-2':'x-circle'}" style="color:${s.completed?'#2F6B4A':'#8B2E2E'}"></i>
           <div><div>${esc(s.step)}</div>${s.note?`<div style="font-size:12px;color:#8A8371;">${esc(s.note)}</div>`:""}</div>
         </div>`).join("")}
     </div>
 
     ${(r.issues && r.issues.length) ? `
     <div class="result-card">
-      <div class="title">Aniqlangan xatolar</div>
+      <div class="title"><i data-lucide="alert-triangle" class="title-icon"></i>Aniqlangan xatolar</div>
       ${r.issues.map(iss => {
         const c = iss.severity==="yuqori"?"#8B2E2E":iss.severity==="o'rta"?"#C6992E":"#9AA3BD";
         return `<div class="issue" style="border-color:${c}">
-          <div class="sev" style="color:${c}">⚠ ${esc(iss.severity||"")} darajali ${iss.when ? `· 🕒 ${esc(iss.when)}` : ""}</div>
+          <div class="sev" style="color:${c}"><i data-lucide="alert-triangle"></i>${esc(iss.severity||"")} darajali ${iss.when ? `· <i data-lucide="clock" style="width:12px;height:12px;vertical-align:-1px;"></i> ${esc(iss.when)}` : ""}</div>
           <div class="quote">"${esc(iss.quote||"")}"</div>
           <div class="row"><b>Nima xato edi:</b> ${esc(iss.what_was_wrong||"")}</div>
           <div class="row"><b>Nega xato:</b> ${esc(iss.why_wrong||"")}</div>
@@ -635,7 +657,7 @@ function renderChatView() {
     </div>
     <div class="chat-input">
       <input type="text" id="chatInput" placeholder="Savolingizni yozing..." />
-      <button class="btn-send" id="sendChat">➤</button>
+      <button class="btn-send" id="sendChat"><i data-lucide="send"></i></button>
     </div>
   </div>`;
 
@@ -685,13 +707,13 @@ function renderScriptView() {
     <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
     <div style="max-width:560px;margin-top:20px;">
       <div id="stepsList">
-        ${state.scriptSteps.map((s,i)=>`<div class="step-row"><span>${i+1}. ${esc(s)}</span><button data-i="${i}" class="rmStep">✕</button></div>`).join("")}
+        ${state.scriptSteps.map((s,i)=>`<div class="step-row"><span>${i+1}. ${esc(s)}</span><button data-i="${i}" class="rmStep"><i data-lucide="x"></i></button></div>`).join("")}
       </div>
       <div class="add-step">
         <input type="text" id="newStep" placeholder="Yangi bosqich qo'shish..." />
-        <button id="addStep">+</button>
+        <button id="addStep"><i data-lucide="plus"></i></button>
       </div>
-      <button class="btn-primary" id="saveScript">Saqlash</button>
+      <button class="btn-primary" id="saveScript"><i data-lucide="save"></i> Saqlash</button>
       <div id="scriptMsg" style="font-size:13px;margin-top:8px;"></div>
     </div>
   </div>`;
@@ -709,7 +731,7 @@ function renderScriptView() {
     const msg = document.getElementById("scriptMsg");
     try {
       await api("PUT", "/api/admin/script", { scriptSteps: state.scriptSteps });
-      msg.textContent = "✔ Saqlandi";
+      msg.innerHTML = '<i data-lucide="check-circle-2" style="width:14px;height:14px;vertical-align:-2px;"></i> Saqlandi';
       msg.style.color = "var(--success)";
     } catch (e) {
       msg.textContent = "Xatolik: " + e.message;
@@ -736,12 +758,12 @@ async function loadAndRenderUsers() {
         <tr>
           <td>${esc(u.full_name)}</td>
           <td>${esc(u.username)}</td>
-          <td><span class="pill ${u.role}">${u.role==='admin'?'Administrator':'Operator'}</span></td>
-          <td>${u.active ? '<span class="pill operator">Faol</span>' : '<span class="pill inactive">O\'chirilgan</span>'}</td>
+          <td><span class="pill ${u.role}"><i data-lucide="${u.role==='admin'?'crown':'user'}"></i>${u.role==='admin'?'Administrator':'Operator'}</span></td>
+          <td>${u.active ? '<span class="pill operator"><i data-lucide="check"></i>Faol</span>' : '<span class="pill inactive"><i data-lucide="ban"></i>O\'chirilgan</span>'}</td>
           <td>
-            <button class="btn-outline resetPw" data-id="${u.id}" data-name="${esc(u.full_name)}">Parol</button>
-            <button class="btn-outline toggleActive" data-id="${u.id}" data-active="${u.active}">${u.active?'O\'chirish':'Yoqish'}</button>
-            <button class="btn-danger delUser" data-id="${u.id}">O'chirish</button>
+            <button class="btn-outline resetPw" data-id="${u.id}" data-name="${esc(u.full_name)}"><i data-lucide="key-round"></i> Parol</button>
+            <button class="btn-outline toggleActive" data-id="${u.id}" data-active="${u.active}"><i data-lucide="${u.active?'power-off':'power'}"></i> ${u.active?'O\'chirish':'Yoqish'}</button>
+            <button class="btn-danger delUser" data-id="${u.id}"><i data-lucide="trash-2"></i> O'chirish</button>
           </td>
         </tr>`).join("")}
     </table>
@@ -754,7 +776,7 @@ async function loadAndRenderUsers() {
         <option value="operator">Operator</option>
         <option value="admin">Administrator</option>
       </select>
-      <button class="btn-primary" id="addUserBtn">Qo'shish</button>
+      <button class="btn-primary" id="addUserBtn"><i data-lucide="user-plus"></i> Qo'shish</button>
     </div>
     <div id="usersMsg" style="font-size:13px;margin-top:8px;"></div>
   </div>`;
@@ -800,15 +822,15 @@ function openResetPasswordModal(userId, userName) {
   overlay.className = "modal-overlay";
   overlay.innerHTML = `
     <div class="modal-box">
-      <h2 class="serif">Parolni almashtirish</h2>
+      <h2 class="serif"><i data-lucide="key-round" style="width:16px;height:16px;vertical-align:-2px;margin-right:6px;color:var(--gold-deep);"></i>Parolni almashtirish</h2>
       <div class="sub">${esc(userName)} uchun yangi parol o'rnatiladi.</div>
       <label>Yangi parol</label>
       <input type="password" id="rp_new" />
       <label>Yangi parolni takrorlang</label>
       <input type="password" id="rp_confirm" />
       <div class="modal-actions">
-        <button class="btn-outline" id="rp_cancel">Bekor qilish</button>
-        <button class="btn-primary" id="rp_save">Saqlash</button>
+        <button class="btn-outline" id="rp_cancel"><i data-lucide="x"></i> Bekor qilish</button>
+        <button class="btn-primary" id="rp_save"><i data-lucide="save"></i> Saqlash</button>
       </div>
       <div class="modal-msg" id="rp_msg"></div>
     </div>`;
@@ -824,7 +846,8 @@ function openResetPasswordModal(userId, userName) {
     msg.textContent = "Saqlanmoqda..."; msg.style.color = "var(--muted)";
     try {
       await api("PATCH", `/api/admin/users/${userId}/password`, { password: next });
-      msg.textContent = "✔ Parol almashtirildi"; msg.style.color = "var(--success)";
+      msg.innerHTML = '<i data-lucide="check-circle-2" style="width:14px;height:14px;vertical-align:-2px;"></i> Parol almashtirildi';
+      msg.style.color = "var(--success)";
       setTimeout(() => overlay.remove(), 900);
     } catch (e) {
       msg.textContent = e.message; msg.style.color = "var(--danger)";
@@ -846,13 +869,14 @@ async function loadAndRenderAdminHistory() {
     <svg class="ikat divider" viewBox="0 0 200 10" preserveAspectRatio="none">${ikatSVG("#C6992E")}</svg>
     <div id="allHistoryList">
       ${state.adminHistory.length === 0
-        ? `<div class="empty">Hozircha tahlil yo'q.</div>`
+        ? `<div class="empty"><i data-lucide="inbox" style="width:22px;height:22px;color:#C9BE9A;margin-bottom:8px;"></i><br>Hozircha tahlil yo'q.</div>`
         : state.adminHistory.map(h => `
           <div class="history-item" data-id="${h.id}">
             <div><div class="t">${esc(h.full_name)} — ${esc(h.title || "Qo'ng'iroq")}</div><div class="tm">${fmtDate(h.created_at)}</div></div>
-            <div>
-              <span style="color:#2F6B4A;margin-right:14px;">${h.script_completion}% skript</span>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="color:#2F6B4A;">${h.script_completion}% skript</span>
               <span style="color:${scoreColor(h.honesty_score)}">${h.honesty_score} halollik</span>
+              <i data-lucide="chevron-right" class="chevron"></i>
             </div>
           </div>`).join("")}
     </div>
@@ -861,4 +885,3 @@ async function loadAndRenderAdminHistory() {
     el.onclick = () => openHistoryDetail(+el.dataset.id);
   });
 }
-
